@@ -1,0 +1,13 @@
+services:
+  scop:
+    build:
+      context: '.'
+      dockerfile: './.docker/Dockerfile'
+    environment:
+      DISPLAY: $DISPLAY
+    network_mode: host
+    volumes:
+      - .:/usr/src/app
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    stdin_open: true
+    tty: true
