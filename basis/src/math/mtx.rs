@@ -317,31 +317,30 @@ mod tests {
 
     #[test]
     fn should_be_able_to_instantiate_mat4_with_ortho() {
-        todo!("finish testing orthographic projection");
         let result = Mat4::ortho(0., 800., 0., 800., 0.1, 100.);
 
         // line 1
-        assert_eq!(result.c0.x, 1.0);
+        assert_eq!(result.c0.x, 0.0025);
         assert_eq!(result.c0.y, 0.0);
         assert_eq!(result.c0.z, 0.0);
         assert_eq!(result.c0.w, 0.0);
 
         // line 2
         assert_eq!(result.c1.x, 0.0);
-        assert_eq!(result.c1.y, 1.0);
+        assert_eq!(result.c1.y, 0.0025);
         assert_eq!(result.c1.z, 0.0);
         assert_eq!(result.c1.w, 0.0);
 
         // line 3
         assert_eq!(result.c2.x, 0.0);
         assert_eq!(result.c2.y, 0.0);
-        assert_eq!(result.c2.z, 1.0);
+        assert_eq!(result.c2.z, 0.02002002);
         assert_eq!(result.c2.w, 0.0);
 
         // line 4
-        assert_eq!(result.c3.x, 0.0);
-        assert_eq!(result.c3.y, 0.0);
-        assert_eq!(result.c3.z, 0.0);
+        assert_eq!(result.c3.x, -1.0);
+        assert_eq!(result.c3.y, -1.0);
+        assert_eq!(result.c3.z, 0.0020020008);
         assert_eq!(result.c3.w, 1.0);
     }
 
