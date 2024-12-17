@@ -1,4 +1,5 @@
 mod learning_04;
+mod learning_05;
 
 use basis::graphics::{
     glw::{self},
@@ -14,7 +15,7 @@ fn main() {
         glw::clear_color(0.2, 0.3, 0.3, 1.0);
         glw::clear(gl::COLOR_BUFFER_BIT);
 
-        learning_04::draw_triangles_with_transforms(&window);
+        learning_05::draw_triangles_with_perspective(&window);
 
         window.update();
     }

@@ -28,6 +28,15 @@ impl Vec4 {
             w: n,
         }
     }
+
+    pub fn negate(&self) -> Self {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+            w: -self.w,
+        }
+    }
 }
 
 impl Vec3 {
@@ -37,6 +46,14 @@ impl Vec3 {
 
     pub fn default(n: f32) -> Self {
         Self { x: n, y: n, z: n }
+    }
+
+    pub fn negate(&self) -> Self {
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
     }
 }
 

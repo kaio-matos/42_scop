@@ -29,6 +29,32 @@ impl Mat4 {
         }
     }
 
+    pub fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Self {
+        let mid = Vec3 {
+            x: (left + right) / 2.,
+            y: (bottom + top) / 2.,
+            z: (-near + -far) / 2.,
+        };
+
+        let scale = Vec3 {
+            x: 2. / (right - left),
+            y: 2. / (top - bottom),
+            z: 2. / (far - near),
+        };
+
+        let center_about_origin = *Mat4::identity().translate(mid.negate());
+        let scale_viewing_volume = *Mat4::identity().scale(scale);
+        let mut convert_to_left_handed = Mat4::identity();
+        convert_to_left_handed.c3.z = -1.;
+
+        let mut result = Mat4::identity();
+
+        *result
+            .multiply(convert_to_left_handed)
+            .multiply(scale_viewing_volume)
+            .multiply(center_about_origin)
+    }
+
     pub fn default(n: f32) -> Self {
         Self {
             c0: Vec4::new(n, n, n, n),
@@ -38,7 +64,7 @@ impl Mat4 {
         }
     }
 
-    pub fn multiply(&mut self, mat: Mat4) -> &Self {
+    pub fn multiply(&mut self, mat: Mat4) -> &mut Self {
         let mut new = Mat4::default(0.0);
 
         // First line
@@ -263,6 +289,36 @@ mod tests {
     #[test]
     fn should_be_able_to_instantiate_mat4_with_new() {
         let result = Mat4::new(Vec4::default(1.0));
+
+        // line 1
+        assert_eq!(result.c0.x, 1.0);
+        assert_eq!(result.c0.y, 0.0);
+        assert_eq!(result.c0.z, 0.0);
+        assert_eq!(result.c0.w, 0.0);
+
+        // line 2
+        assert_eq!(result.c1.x, 0.0);
+        assert_eq!(result.c1.y, 1.0);
+        assert_eq!(result.c1.z, 0.0);
+        assert_eq!(result.c1.w, 0.0);
+
+        // line 3
+        assert_eq!(result.c2.x, 0.0);
+        assert_eq!(result.c2.y, 0.0);
+        assert_eq!(result.c2.z, 1.0);
+        assert_eq!(result.c2.w, 0.0);
+
+        // line 4
+        assert_eq!(result.c3.x, 0.0);
+        assert_eq!(result.c3.y, 0.0);
+        assert_eq!(result.c3.z, 0.0);
+        assert_eq!(result.c3.w, 1.0);
+    }
+
+    #[test]
+    fn should_be_able_to_instantiate_mat4_with_ortho() {
+        todo!("finish testing orthographic projection");
+        let result = Mat4::ortho(0., 800., 0., 800., 0.1, 100.);
 
         // line 1
         assert_eq!(result.c0.x, 1.0);
