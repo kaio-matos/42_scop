@@ -55,6 +55,10 @@ impl Mat4 {
             .multiply(center_about_origin)
     }
 
+    pub fn perspective(fov: f32, aspect_ration: f32, near: f32, far: f32) -> Self {
+        todo!("perspective");
+    }
+
     pub fn default(n: f32) -> Self {
         Self {
             c0: Vec4::new(n, n, n, n),
