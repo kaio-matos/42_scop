@@ -1,6 +1,6 @@
 # Exported from Figuro at https://www.figuro.io
 
-mtllib newscene.mtl
+mtllib cube.mtl
 o cube39
 v 94.06582733940832 0 -1282.6524602687805
 v -350.0658273394083 0 -1282.6524602687805
