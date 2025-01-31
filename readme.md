@@ -1,6 +1,9 @@
 
 ### Links
 
+- Rust
+    - https://oida.dev/rust-enums-wrapping-errors
+
 - Learn OpenGL
     - https://learnopengl.com/Getting-started/Coordinate-Systems
 
@@ -14,3 +17,12 @@
 
 - Figuro (free 3D modeling website)
     - https://www.figuro.io/Designer
+
+- Models for testing
+    - https://people.math.sc.edu/Burkardt/data/obj/obj.html
+
+- Wavefront .obj file format spec
+    - https://www.martinreddy.net/gfx/3d/OBJ.spec
+
+- Wavefront .mtl file format spec
+    - https://www.fileformat.info/format/material/
