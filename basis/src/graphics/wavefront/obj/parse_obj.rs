@@ -232,7 +232,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_be_able_to_ignore_comments() {
+    fn it_should_be_able_to_ignore_comments() {
         let file = "
             # This is a comment
 
@@ -256,7 +256,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_parse_name() {
+    fn it_should_be_able_parse_name() {
         let file = "
             # This is a comment
 
@@ -272,7 +272,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_parse_mtllib() {
+    fn it_should_be_able_parse_mtllib() {
         let file = "
             # This is a comment
 
@@ -292,7 +292,7 @@ mod tests {
 
     #[test]
     #[rustfmt::skip]
-    fn should_store_vertices() {
+    fn it_should_store_vertices() {
         let file = "
             # This is a comment
 
@@ -346,7 +346,7 @@ mod tests {
 
     #[test]
     #[rustfmt::skip]
-    fn should_store_faces() {
+    fn it_should_store_faces() {
         let file = "
             # This is a comment
 
@@ -375,7 +375,7 @@ mod tests {
 
     #[test]
     #[rustfmt::skip]
-    fn should_fail_to_store_faces() {
+    fn it_should_fail_to_store_faces() {
         let file = "
             # This is a comment
 
@@ -398,7 +398,7 @@ mod tests {
 
     #[test]
     #[rustfmt::skip]
-    fn should_store_face_with_materials() {
+    fn it_should_store_face_with_materials() {
         let file = "
             # This is a comment
 

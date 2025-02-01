@@ -262,7 +262,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_be_able_to_instantiate_mat4() {
+    fn it_should_be_able_to_instantiate_mat4() {
         let result = Mat4::default(1.0);
 
         // line 1
@@ -291,7 +291,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_to_instantiate_mat4_with_new() {
+    fn it_should_be_able_to_instantiate_mat4_with_new() {
         let result = Mat4::new(Vec4::default(1.0));
 
         // line 1
@@ -320,7 +320,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_to_instantiate_mat4_with_ortho() {
+    fn it_should_be_able_to_instantiate_mat4_with_ortho() {
         let result = Mat4::ortho(0., 800., 0., 800., 0.1, 100.);
 
         // line 1
@@ -349,7 +349,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_to_multiply_mtx4() {
+    fn it_should_be_able_to_multiply_mtx4() {
         let mut first = Mat4::default(0.0);
         first.c0.x = 1.0;
         first.c0.y = 0.0;
@@ -420,7 +420,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_to_translate_mtx4() {
+    fn it_should_be_able_to_translate_mtx4() {
         let translate_vector = Vec3 {
             x: 1.0,
             y: 2.0,
@@ -476,7 +476,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_to_rotate_around_z_axis_mtx4() {
+    fn it_should_be_able_to_rotate_around_z_axis_mtx4() {
         let rotation_vector = Vec3 {
             x: 0.0,
             y: 0.0,
@@ -538,7 +538,7 @@ mod tests {
     }
 
     #[test]
-    fn should_be_able_to_scale_mtx4() {
+    fn it_should_be_able_to_scale_mtx4() {
         let scale_vector = Vec3 {
             x: 2.0,
             y: 2.0,

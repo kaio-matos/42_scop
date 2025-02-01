@@ -62,7 +62,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_be_able_to_instantiate_vec4() {
+    fn it_should_be_able_to_instantiate_vec4() {
         let result = Vec4::new(1.0, 2.0, 3.0, 4.0);
 
         assert_eq!(result.x, 1.0);
