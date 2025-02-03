@@ -2,7 +2,7 @@ use super::helpers;
 use super::structs::{ParseError, OBJ};
 
 pub fn parse_obj(data: &str) -> Result<OBJ, ParseError> {
-    let mut obj = OBJ::new();
+    let mut obj = OBJ::default();
 
     let lines = data.split("\n").map(|s| s.trim()).filter(|s| !s.is_empty());
     let mut previous_line = Option::None;

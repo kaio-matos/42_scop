@@ -78,7 +78,7 @@ impl std::fmt::Display for ParseError {
 // Vertex data
 ///////////////////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Vertice {
     pub x: f32,
     pub y: f32,
@@ -96,7 +96,7 @@ impl PartialEq for Vertice {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct VerticeParameterSpace {
     pub u: f32,
     pub v: f32,
@@ -113,7 +113,7 @@ impl PartialEq for VerticeParameterSpace {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct VerticeNormal {
     pub i: f32,
     pub j: f32,
@@ -130,7 +130,7 @@ impl PartialEq for VerticeNormal {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct VerticeTexture {
     pub u: f32,
     pub v: f32,
@@ -151,7 +151,7 @@ impl PartialEq for VerticeTexture {
 // Elements
 ///////////////////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct FaceSide {
     pub v: usize,
     pub vt: usize,
@@ -168,7 +168,7 @@ impl PartialEq for FaceSide {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Face {
     pub sides: Vec<FaceSide>,
     pub material: Option<String>,
@@ -184,7 +184,7 @@ impl PartialEq for Face {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct OBJ {
     //
     // Vertex data
@@ -208,33 +208,4 @@ pub struct OBJ {
     // Display/render attributes
     //
     pub mtllib: Option<Vec<String>>,
-}
-
-impl OBJ {
-    pub fn new() -> OBJ {
-        OBJ {
-            //
-            // Vertex data
-            //
-            vertices: Vec::new(),
-            vertices_texture: Vec::new(),
-            vertices_normal: Vec::new(),
-            vertices_parameter_space: Vec::new(),
-
-            //
-            // Elements
-            //
-            faces: Vec::new(),
-
-            //
-            // Grouping
-            //
-            name: None,
-
-            //
-            // Display/render attributes
-            //
-            mtllib: None,
-        }
-    }
 }
