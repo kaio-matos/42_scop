@@ -26,3 +26,4 @@
 
 - Wavefront .mtl file format spec
     - https://www.fileformat.info/format/material/
+    - https://paulbourke.net/dataformats/mtl/
