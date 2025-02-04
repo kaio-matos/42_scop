@@ -12,7 +12,7 @@ fn main() {
 
     window.init_gl();
 
-    let obj = wavefront::obj::load("resources/objects/cube.obj");
+    let obj = wavefront::obj::load("scop/src/resources/cube/cube.obj");
 
     println!("{:#?}", obj);
 

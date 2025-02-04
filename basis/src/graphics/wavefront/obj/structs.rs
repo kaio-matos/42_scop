@@ -1,3 +1,5 @@
+use crate::graphics::wavefront;
+
 #[derive(Debug)]
 pub enum ParseError {
     InvalidToken(usize, String),
@@ -207,5 +209,6 @@ pub struct OBJ {
     //
     // Display/render attributes
     //
-    pub mtllib: Option<Vec<String>>,
+    pub materials_names: Vec<String>,
+    pub materials: Vec<wavefront::mtl::MTL>,
 }

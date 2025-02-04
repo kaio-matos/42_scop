@@ -189,7 +189,7 @@ pub fn parse_obj(data: &str) -> Result<OBJ, ParseError> {
                     .filter(|s| s != &"mtllib")
                     .map(|s| s.to_string())
                     .collect();
-                obj.mtllib = Some(mtllib);
+                obj.materials_names = mtllib;
                 Ok(())
             }
             "shadow_obj" => {
@@ -285,8 +285,8 @@ mod tests {
         let result = parse_obj(file).expect("This should work");
 
         assert_eq!(
-            result.mtllib,
-            Some(vec!["cube.mtl".to_string(), "testing.mtl".to_string()])
+            result.materials_names,
+            vec!["cube.mtl".to_string(), "testing.mtl".to_string()]
         );
     }
 
