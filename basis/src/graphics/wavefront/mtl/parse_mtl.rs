@@ -425,4 +425,45 @@ mod tests {
         assert_eq!(dirt.illumination_model, IlluminationModel::CastsShadows);
 
     }
+
+    #[test]
+    #[rustfmt::skip]
+    fn it_should_resolve_42_logo() {
+        let file = "
+            # Blender MTL File: '42.blend'
+            # Material Count: 1
+
+            newmtl Material
+            Ns 96.078431
+            Ka 0.000000 0.000000 0.000000
+            Kd 0.640000 0.640000 0.640000
+            Ks 0.500000 0.500000 0.500000
+            Ni 1.000000
+            d 1.000000
+            illum 2
+";
+
+        let result = parse_mtl(file).expect("This should work");
+        let material = result.materials.get("Material").unwrap();
+
+        assert_eq!(result.materials.len(), 1);
+
+        assert_eq!(material.ambient_reflectivity.r, 0.0);
+        assert_eq!(material.ambient_reflectivity.g, 0.0);
+        assert_eq!(material.ambient_reflectivity.b, 0.0);
+
+        assert_eq!(material.diffuse_reflectivity.r, 0.64);
+        assert_eq!(material.diffuse_reflectivity.g, 0.64);
+        assert_eq!(material.diffuse_reflectivity.b, 0.64);
+
+        assert_eq!(material.atmosphere_reflectivity.r, 0.5);
+        assert_eq!(material.atmosphere_reflectivity.g, 0.5);
+        assert_eq!(material.atmosphere_reflectivity.b, 0.5);
+
+        assert_eq!(material.specular_highlight_exponent, 96.078431);
+        assert_eq!(material.optical_density, 1.0);
+        assert_eq!(material.dissolve_factor.factor, 1.0);
+        assert_eq!(material.dissolve_factor.halo, false);
+        assert_eq!(material.illumination_model, IlluminationModel::HighlightOn);
+    }
 }

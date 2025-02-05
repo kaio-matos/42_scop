@@ -2,10 +2,12 @@ mod helpers;
 mod parse_obj;
 mod structs;
 
-use structs::{ParseError, OBJ};
+use structs::ParseError;
 
 use crate::graphics::wavefront;
 use crate::graphics::wavefront::obj::parse_obj::parse_obj;
+
+pub use structs::OBJ;
 
 #[derive(Debug)]
 pub enum LoadOBJError {

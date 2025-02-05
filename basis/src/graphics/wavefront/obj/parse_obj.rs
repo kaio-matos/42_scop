@@ -375,6 +375,36 @@ mod tests {
 
     #[test]
     #[rustfmt::skip]
+    fn it_should_store_face_specifying_only_the_vertice() {
+        let file = "
+            v 0.000000 2.000000 2.000000
+            v 0.000000 0.000000 2.000000
+            v 2.000000 0.000000 2.000000
+            v 2.000000 2.000000 2.000000
+            v 0.000000 2.000000 0.000000
+            v 0.000000 0.000000 0.000000
+            v 2.000000 0.000000 0.000000
+            v 2.000000 2.000000 0.000000
+            f 1 2 3 4
+            f 8 7 6 5
+";
+
+        let result = parse_obj(file).expect("This should work");
+
+
+        assert_eq!(result.faces[0].sides[0], FaceSide::new(1, 0, 0));
+        assert_eq!(result.faces[0].sides[1], FaceSide::new(2, 0, 0));
+        assert_eq!(result.faces[0].sides[2], FaceSide::new(3, 0, 0));
+        assert_eq!(result.faces[0].sides[3], FaceSide::new(4, 0, 0));
+
+        assert_eq!(result.faces[1].sides[0], FaceSide::new(8, 0, 0));
+        assert_eq!(result.faces[1].sides[1], FaceSide::new(7, 0, 0));
+        assert_eq!(result.faces[1].sides[2], FaceSide::new(6, 0, 0));
+        assert_eq!(result.faces[1].sides[3], FaceSide::new(5, 0, 0));
+    }
+
+    #[test]
+    #[rustfmt::skip]
     fn it_should_fail_to_store_faces() {
         let file = "
             # This is a comment

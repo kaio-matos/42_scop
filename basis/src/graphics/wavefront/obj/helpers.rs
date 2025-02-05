@@ -93,8 +93,8 @@ pub fn parse_face(
         let mut parts = token.split("/");
 
         let v = parts.next().unwrap().parse::<usize>();
-        let vt = parts.next().unwrap().parse::<usize>();
-        let vn = parts.next().unwrap().parse::<usize>();
+        let vt = parts.next().map_or("0", |s| s).parse::<usize>();
+        let vn = parts.next().map_or("0", |s| s).parse::<usize>();
 
         match (v, vt, vn) {
             (Ok(v), Ok(vt), Ok(vn)) => {

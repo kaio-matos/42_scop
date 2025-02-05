@@ -89,7 +89,7 @@ fn parse_material_rgb(tokens: &mut IntoIter<&str>, line_n: usize) -> Result<RGB,
         .next()
         .map_or(r.to_string().as_str(), |s| s)
         .parse::<f32>()
-        .map_err(|_| ParseError::InvalidToken(line_n, "Invalid R value".to_string()))?;
+        .map_err(|_| ParseError::InvalidToken(line_n, "Invalid G value".to_string()))?;
 
     let b = tokens
         .next()
