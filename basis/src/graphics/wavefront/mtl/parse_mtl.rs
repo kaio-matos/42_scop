@@ -52,7 +52,7 @@ pub fn parse_mtl(data: &str) -> Result<MTL, ParseError> {
                             &mut lines.clone().peekable(),
                             current_line,
                         )?;
-                        mtl.materials.insert(name.to_string(), material);
+                        mtl.insert(name.to_string(), material);
                         lines.advance(read);
                     }
                     None => {
@@ -94,9 +94,9 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock =result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
-        assert_eq!(result.materials.len(), 1);
+        assert_eq!(result.len(), 1);
         assert_eq!(rock.ambient_reflectivity.r, 0.0);
         assert_eq!(rock.ambient_reflectivity.r, 0.0);
         assert_eq!(rock.ambient_reflectivity.r, 0.0);
@@ -112,9 +112,9 @@ mod tests {
 
         let result = parse_mtl(file).expect("This should work");
 
-        assert_eq!(result.materials.len(), 1);
-        assert!(result.materials.get("Rock").is_some());
-        assert_eq!(result.materials.get("Rock").unwrap().name, "Rock");
+        assert_eq!(result.len(), 1);
+        assert!(result.get("Rock").is_some());
+        assert_eq!(result.get("Rock").unwrap().name, "Rock");
     }
 
     #[test]
@@ -129,9 +129,9 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
-        assert_eq!(result.materials.len(), 1);
+        assert_eq!(result.len(), 1);
         assert_eq!(rock.ambient_reflectivity.r, 0.2);
         assert_eq!(rock.ambient_reflectivity.g, 0.5);
         assert_eq!(rock.ambient_reflectivity.b, 0.1);
@@ -161,9 +161,9 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
-        assert_eq!(result.materials.len(), 1);
+        assert_eq!(result.len(), 1);
         assert_eq!(rock.ambient_reflectivity.r, 0.2);
         assert_eq!(rock.ambient_reflectivity.g, 0.2);
         assert_eq!(rock.ambient_reflectivity.b, 0.2);
@@ -193,9 +193,9 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
-        assert_eq!(result.materials.len(), 1);
+        assert_eq!(result.len(), 1);
         assert_eq!(rock.ambient_reflectivity.r, 0.2);
         assert_eq!(rock.ambient_reflectivity.g, 0.5);
         assert_eq!(rock.ambient_reflectivity.b, 0.2);
@@ -225,7 +225,7 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
         assert_eq!(rock.illumination_model, IlluminationModel::ColorOnAmbientOff);
     }
@@ -243,7 +243,7 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
         assert_eq!(rock.illumination_model, IlluminationModel::HighlightOn);
     }
@@ -262,7 +262,7 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
         assert_eq!(rock.specular_highlight_exponent, 100.0);
     }
@@ -282,7 +282,7 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
         assert_eq!(rock.sharpness, 100.0);
     }
@@ -302,7 +302,7 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
+        let rock = result.get("Rock").unwrap();
 
         assert_eq!(rock.optical_density, 0.002);
     }
@@ -376,10 +376,10 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let rock = result.materials.get("Rock").unwrap();
-        let dirt = result.materials.get("Dirt").unwrap();
+        let rock = result.get("Rock").unwrap();
+        let dirt = result.get("Dirt").unwrap();
 
-        assert_eq!(result.materials.len(), 2);
+        assert_eq!(result.len(), 2);
         assert_eq!(rock.ambient_reflectivity.r, 0.2);
         assert_eq!(rock.ambient_reflectivity.g, 0.5);
         assert_eq!(rock.ambient_reflectivity.b, 0.1);
@@ -444,9 +444,9 @@ mod tests {
 ";
 
         let result = parse_mtl(file).expect("This should work");
-        let material = result.materials.get("Material").unwrap();
+        let material = result.get("Material").unwrap();
 
-        assert_eq!(result.materials.len(), 1);
+        assert_eq!(result.len(), 1);
 
         assert_eq!(material.ambient_reflectivity.r, 0.0);
         assert_eq!(material.ambient_reflectivity.g, 0.0);

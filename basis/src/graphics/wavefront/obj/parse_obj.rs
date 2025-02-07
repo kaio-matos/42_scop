@@ -1,7 +1,7 @@
 use super::helpers;
 use super::structs::{ParseError, OBJ};
 
-pub fn parse_obj(data: &str) -> Result<OBJ, ParseError> {
+pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
     let mut obj = OBJ::default();
 
     let lines = data.split("\n").map(|s| s.trim()).filter(|s| !s.is_empty());
@@ -189,7 +189,7 @@ pub fn parse_obj(data: &str) -> Result<OBJ, ParseError> {
                     .filter(|s| s != &"mtllib")
                     .map(|s| s.to_string())
                     .collect();
-                obj.materials_names = mtllib;
+                obj.mtls_identifiers = mtllib;
                 Ok(())
             }
             "shadow_obj" => {
@@ -285,7 +285,7 @@ mod tests {
         let result = parse_obj(file).expect("This should work");
 
         assert_eq!(
-            result.materials_names,
+            result.mtls_identifiers,
             vec!["cube.mtl".to_string(), "testing.mtl".to_string()]
         );
     }
@@ -453,11 +453,11 @@ mod tests {
         let result = parse_obj(file).expect("This should work");
 
         assert_eq!(result.faces.len(), 6);
-        assert_eq!(result.faces[0].material, Some("4bed15".to_string()));
-        assert_eq!(result.faces[1].material, Some("2daec2".to_string()));
-        assert_eq!(result.faces[2].material, None);
-        assert_eq!(result.faces[3].material, None);
-        assert_eq!(result.faces[4].material, Some("4602e3".to_string()));
-        assert_eq!(result.faces[5].material, Some("c41dde".to_string()));
+        assert_eq!(result.faces[0].material_name, Some("4bed15".to_string()));
+        assert_eq!(result.faces[1].material_name, Some("2daec2".to_string()));
+        assert_eq!(result.faces[2].material_name, None);
+        assert_eq!(result.faces[3].material_name, None);
+        assert_eq!(result.faces[4].material_name, Some("4602e3".to_string()));
+        assert_eq!(result.faces[5].material_name, Some("c41dde".to_string()));
     }
 }

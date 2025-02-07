@@ -1,4 +1,7 @@
-use crate::graphics::wavefront;
+use crate::graphics::wavefront::{
+    self,
+    mtl::{Material, MTL},
+};
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -80,7 +83,7 @@ impl std::fmt::Display for ParseError {
 // Vertex data
 ///////////////////////////////////
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Vertice {
     pub x: f32,
     pub y: f32,
@@ -98,7 +101,7 @@ impl PartialEq for Vertice {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct VerticeParameterSpace {
     pub u: f32,
     pub v: f32,
@@ -115,7 +118,7 @@ impl PartialEq for VerticeParameterSpace {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct VerticeNormal {
     pub i: f32,
     pub j: f32,
@@ -132,7 +135,7 @@ impl PartialEq for VerticeNormal {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct VerticeTexture {
     pub u: f32,
     pub v: f32,
@@ -153,7 +156,7 @@ impl PartialEq for VerticeTexture {
 // Elements
 ///////////////////////////////////
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct FaceSide {
     pub v: usize,
     pub vt: usize,
@@ -170,23 +173,37 @@ impl PartialEq for FaceSide {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Face {
     pub sides: Vec<FaceSide>,
-    pub material: Option<String>,
+    pub material_name: Option<String>,
+    pub material: Option<Material>,
 }
 impl Face {
-    pub fn new(sides: Vec<FaceSide>, material: Option<String>) -> Face {
-        Face { sides, material }
+    pub fn partial_new(sides: Vec<FaceSide>, material_name: Option<String>) -> Face {
+        Face {
+            sides,
+            material_name,
+            material: None,
+        }
+    }
+
+    pub fn is_partial(&self) -> bool {
+        self.material.is_none()
+    }
+
+    pub fn set_material(&mut self, material: Option<Material>) {
+        self.material = material;
     }
 }
+
 impl PartialEq for Face {
     fn eq(&self, other: &Self) -> bool {
         self.sides == other.sides
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct OBJ {
     //
     // Vertex data
@@ -209,6 +226,51 @@ pub struct OBJ {
     //
     // Display/render attributes
     //
-    pub materials_names: Vec<String>,
-    pub materials: Vec<wavefront::mtl::MTL>,
+    pub mtls_identifiers: Vec<String>,
+    pub mtls: Vec<wavefront::mtl::MTL>,
+}
+
+impl OBJ {
+    pub fn has_loaded_materials(&self) -> bool {
+        self.mtls.len() > 0
+    }
+
+    pub fn get_raw_vertices(&self) -> Vec<f32> {
+        self.vertices.iter().fold(
+            Vec::with_capacity(self.vertices.len() * 4),
+            |mut acc, vertice| {
+                acc.push(vertice.x);
+                acc.push(vertice.y);
+                acc.push(vertice.z);
+                acc.push(vertice.w);
+                println!("{:?}", vertice);
+                acc
+            },
+        )
+    }
+
+    pub fn get_raw_indices(&self) -> Vec<u32> {
+        self.faces.iter().fold(Vec::new(), |mut acc, face| {
+            face.sides.iter().for_each(|side| {
+                acc.push((side.v - 1) as u32);
+            });
+            acc
+        })
+    }
+
+    pub fn load_mtls(&mut self, mtls: Vec<MTL>) -> &Self {
+        self.mtls = mtls;
+
+        for face in self.faces.iter_mut() {
+            if face.material_name.is_none() {
+                continue;
+            }
+            if let Some(name) = face.material_name.clone() {
+                for material in self.mtls.iter() {
+                    face.set_material(material.get(&name).cloned());
+                }
+            }
+        }
+        self
+    }
 }

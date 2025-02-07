@@ -73,7 +73,7 @@ fn parse_usemtl(line: Option<&str>) -> Option<String> {
         .into_iter();
 
     if tokens.next() == Some("usemtl") {
-        Some(tokens.next().unwrap().to_string())
+        Some(tokens.next().unwrap().to_string().clone())
     } else {
         None
     }
@@ -84,8 +84,8 @@ pub fn parse_face(
     previous_line: Option<&str>,
     line_n: usize,
 ) -> Result<Face, ParseError> {
-    let material = parse_usemtl(previous_line);
-    let mut face = Face::new(Vec::new(), material);
+    let material_name = parse_usemtl(previous_line);
+    let mut face = Face::partial_new(Vec::new(), material_name);
     let mut is_tripplets_format = false;
     let mut is_twins_format = false;
 

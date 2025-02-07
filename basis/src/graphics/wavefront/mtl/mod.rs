@@ -3,6 +3,7 @@ mod parse_mtl;
 mod structs;
 
 use parse_mtl::parse_mtl;
+pub use structs::Material;
 use structs::ParseError;
 pub use structs::MTL;
 

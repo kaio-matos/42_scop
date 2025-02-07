@@ -25,14 +25,14 @@ impl std::fmt::Display for ParseError {
 /// specified, then g, and b are assumed to be equal to r.  The r g b values
 /// are normally in the range of 0.0 to 1.0.  Values outside this range
 /// increase or decrease the relectivity accordingly.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct RGB {
     pub r: f32,
     pub g: f32,
     pub b: f32,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub enum IlluminationModel {
     #[default]
     ColorOnAmbientOff,
@@ -69,13 +69,13 @@ impl std::str::FromStr for IlluminationModel {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct DissolveFactor {
     pub factor: f32,
     pub halo: bool,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Material {
     pub name: String,
     pub ambient_reflectivity: RGB,
@@ -92,7 +92,4 @@ pub struct Material {
 /*
 * Material Library File
 */
-#[derive(Debug, Default)]
-pub struct MTL {
-    pub materials: HashMap<String, Material>,
-}
+pub type MTL = HashMap<String, Material>;
