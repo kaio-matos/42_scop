@@ -159,15 +159,10 @@ impl Mat4 {
     }
 
     pub fn translate(&mut self, vec: Vec3) -> &Self {
-        let mut translation_mtx = Mat4::default(0.0);
+        let mut translation_mtx = Mat4::identity();
         translation_mtx.c3.x = vec.x;
         translation_mtx.c3.y = vec.y;
         translation_mtx.c3.z = vec.z;
-
-        translation_mtx.c0.x = 1.;
-        translation_mtx.c1.y = 1.;
-        translation_mtx.c2.z = 1.;
-        translation_mtx.c3.w = 1.;
 
         *self = *translation_mtx.multiply(*self);
         self
@@ -251,8 +246,6 @@ impl Mat4 {
     }
 
     pub fn as_f32_ptr(&self) -> *const f32 {
-        // self as *const Mat4 as *const f32
-
         ptr::from_ref(&self.c0.x) as *const f32
     }
 }
