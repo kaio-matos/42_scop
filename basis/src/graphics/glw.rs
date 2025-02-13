@@ -241,16 +241,18 @@ impl Shader {
         Self { id: program_id }
     }
 
-    pub fn bind(&self) {
+    pub fn bind(&self) -> &Self {
         unsafe {
             gl::UseProgram(self.id);
         }
+        self
     }
 
-    pub fn unbind(&self) {
+    pub fn unbind(&self) -> &Self {
         unsafe {
             gl::UseProgram(0);
         }
+        self
     }
 
     pub fn attach_shader(&self, shader: &ShaderFile) -> &Self {
@@ -282,7 +284,7 @@ impl Shader {
         Ok(())
     }
 
-    pub fn link_multiple(&self, shaderpaths: Vec<ShaderType>) -> Result<(), io::Error> {
+    pub fn link_multiple(&self, shaderpaths: Vec<ShaderType>) -> Result<&Self, io::Error> {
         let shaders = shaderpaths
             .iter()
             .map(|_type| {
@@ -318,7 +320,7 @@ impl Shader {
             }
         }
         shaders.iter().for_each(|shaderfile| shaderfile.delete());
-        Ok(())
+        Ok(self)
     }
 
     pub fn get_uniform_location(&self, name: &'static str) -> UniformLocation {
@@ -336,20 +338,24 @@ pub struct UniformLocation {
 }
 
 impl UniformLocation {
-    pub fn uniform1b(&self, v0: bool) {
+    pub fn uniform1b(&self, v0: bool) -> &Self {
         unsafe { gl::Uniform1i(self.id, v0 as types::GLint) }
+        self
     }
 
-    pub fn uniform1i(&self, v0: types::GLint) {
+    pub fn uniform1i(&self, v0: types::GLint) -> &Self {
         unsafe { gl::Uniform1i(self.id, v0) }
+        self
     }
 
-    pub fn uniform1f(&self, v0: types::GLfloat) {
+    pub fn uniform1f(&self, v0: types::GLfloat) -> &Self {
         unsafe { gl::Uniform1f(self.id, v0) }
+        self
     }
 
-    pub fn uniform3f(&self, v0: types::GLfloat, v1: types::GLfloat, v2: types::GLfloat) {
+    pub fn uniform3f(&self, v0: types::GLfloat, v1: types::GLfloat, v2: types::GLfloat) -> &Self {
         unsafe { gl::Uniform3f(self.id, v0, v1, v2) }
+        self
     }
 
     pub fn uniform4f(
@@ -358,14 +364,16 @@ impl UniformLocation {
         v1: types::GLfloat,
         v2: types::GLfloat,
         v3: types::GLfloat,
-    ) {
+    ) -> &Self {
         unsafe { gl::Uniform4f(self.id, v0, v1, v2, v3) }
+        self
     }
 
-    pub fn uniform_matrix4fv(&self, mat: &math::Mat4) {
+    pub fn uniform_matrix4fv(&self, mat: &math::Mat4) -> &Self {
         unsafe {
             gl::UniformMatrix4fv(self.id, 1, gl::FALSE, mat.as_f32_ptr());
         }
+        self
     }
 }
 
@@ -465,5 +473,11 @@ pub fn polygon_mode(face: types::GLenum, mode: types::GLenum) {
 pub fn get_integerv(pname: types::GLenum, data: *mut types::GLint) {
     unsafe {
         gl::GetIntegerv(pname, data);
+    }
+}
+
+pub fn enable(cap: types::GLenum) {
+    unsafe {
+        gl::Enable(cap);
     }
 }

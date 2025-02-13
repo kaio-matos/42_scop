@@ -170,6 +170,10 @@ impl Mat4 {
 
     // Needs a refactor to use quartenions
     pub fn rotate(&mut self, radians: f32, r: Vec3) -> &Self {
+        // let mut rotation_x = Mat4::identity();
+        // let mut rotation_y = Mat4::identity();
+        // let mut rotation_z = Mat4::identity();
+        // let mut rotation_mtx = Mat4::new(Vec4::new(r.x, r.y, r.z, 1.0));
         let mut rotation_mtx = Mat4::default(0.0);
 
         let cos = f32::cos(radians);
@@ -178,58 +182,51 @@ impl Mat4 {
         ////
         //// prevents gimbal lock most of the times
         ////
-        // rotation_mtx.c0.x = cos + (r.x * r.x) * (1. - cos);
-        // rotation_mtx.c0.y = r.y * r.x * (1. - cos) + r.z * sin;
-        // rotation_mtx.c0.z = r.z * r.x * (1. - cos) - r.y * sin;
-        // rotation_mtx.c0.w = 0.;
+        rotation_mtx.c0.x = cos + (r.x * r.x) * (1. - cos);
+        rotation_mtx.c0.y = r.y * r.x * (1. - cos) + r.z * sin;
+        rotation_mtx.c0.z = r.z * r.x * (1. - cos) - r.y * sin;
+        rotation_mtx.c0.w = 0.;
+
+        rotation_mtx.c1.x = r.x * r.y * (1. - cos) - r.z * sin;
+        rotation_mtx.c1.y = cos + (r.y * r.y) * (1. - cos);
+        rotation_mtx.c1.z = r.z * r.y * (1. - cos) + r.x * sin;
+        rotation_mtx.c1.w = 0.;
+
+        rotation_mtx.c2.x = r.x * r.z * (1. - cos) + r.y * sin;
+        rotation_mtx.c2.y = r.y * r.z * (1. - cos) - r.x * sin;
+        rotation_mtx.c2.z = cos + (r.z * r.z) * (1. - cos);
+        rotation_mtx.c2.w = 0.;
+
+        rotation_mtx.c3.x = 0.;
+        rotation_mtx.c3.y = 0.;
+        rotation_mtx.c3.z = 0.;
+        rotation_mtx.c3.w = 1.;
+
+        // rotation_x.c0.x = 1.;
+        // rotation_x.c1.y = cos;
+        // rotation_x.c1.z = sin;
+        // rotation_x.c2.y = -sin;
+        // rotation_x.c2.z = cos;
+        // rotation_x.c3.w = 1.;
         //
-        // rotation_mtx.c1.x = r.x * r.y * (1. - cos) - r.z * sin;
-        // rotation_mtx.c1.y = cos + (r.y * r.y) * (1. - cos);
-        // rotation_mtx.c1.z = r.z * r.y * (1. - cos) + r.x * sin;
-        // rotation_mtx.c1.w = 0.;
+        // rotation_y.c0.x = cos;
+        // rotation_y.c0.z = -sin;
+        // rotation_y.c1.y = 1.;
+        // rotation_y.c2.x = sin;
+        // rotation_y.c2.z = cos;
+        // rotation_y.c3.w = 1.;
         //
-        // rotation_mtx.c2.x = r.x * r.z * (1. - cos) + r.y * sin;
-        // rotation_mtx.c2.y = r.y * r.z * (1. - cos) - r.x * sin;
-        // rotation_mtx.c2.z = cos + (r.z * r.z) * (1. - cos);
-        // rotation_mtx.c2.w = 0.;
+        // rotation_z.c0.x = cos;
+        // rotation_z.c0.y = sin;
+        // rotation_z.c1.x = -sin;
+        // rotation_z.c1.y = cos;
+        // rotation_z.c2.z = 1.;
+        // rotation_z.c3.w = 1.;
         //
-        // rotation_mtx.c3.x = 0.;
-        // rotation_mtx.c3.y = 0.;
-        // rotation_mtx.c3.z = 0.;
-        // rotation_mtx.c3.w = 1.;
-
-        if r.x > 0.0 {
-            rotation_mtx.c0.x = 1.;
-
-            rotation_mtx.c1.y = cos;
-            rotation_mtx.c1.z = sin;
-
-            rotation_mtx.c2.y = -sin;
-            rotation_mtx.c2.z = cos;
-
-            rotation_mtx.c3.w = 1.;
-        } else if r.y > 0.0 {
-            rotation_mtx.c0.x = cos;
-            rotation_mtx.c0.z = -sin;
-
-            rotation_mtx.c1.y = 1.;
-
-            rotation_mtx.c2.x = sin;
-            rotation_mtx.c2.z = cos;
-
-            rotation_mtx.c3.w = 1.;
-        } else if r.z > 0.0 {
-            rotation_mtx.c0.x = cos;
-            rotation_mtx.c0.y = sin;
-
-            rotation_mtx.c1.x = -sin;
-            rotation_mtx.c1.y = cos;
-
-            rotation_mtx.c2.z = 1.;
-
-            rotation_mtx.c3.w = 1.;
-        }
-
+        // rotation_mtx
+        //     .multiply(rotation_x)
+        //     .multiply(rotation_y)
+        //     .multiply(rotation_z);
         *self = *rotation_mtx.multiply(*self);
         self
     }

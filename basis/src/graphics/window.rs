@@ -33,14 +33,15 @@ impl Window {
         self.window_handle.should_close()
     }
 
-    pub fn update(&mut self) {
-        self.process_events();
+    pub fn update(&mut self, on_event: &dyn Fn(&WindowEvent) -> ()) {
+        self.process_events(on_event);
         self.glfw.poll_events();
         self.window_handle.swap_buffers();
     }
 
-    fn process_events(&mut self) {
+    fn process_events(&mut self, on_event: &dyn Fn(&WindowEvent) -> ()) {
         for (_, event) in glfw::flush_messages(&self.events) {
+            on_event(&event);
             match event {
                 glfw::WindowEvent::FramebufferSize(width, height) => unsafe {
                     gl::Viewport(0, 0, width, height)

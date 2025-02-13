@@ -243,7 +243,6 @@ impl OBJ {
                 acc.push(vertice.y);
                 acc.push(vertice.z);
                 acc.push(vertice.w);
-                println!("{:?}", vertice);
                 acc
             },
         )
