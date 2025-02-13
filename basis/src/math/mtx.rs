@@ -56,7 +56,18 @@ impl Mat4 {
     }
 
     pub fn perspective(fov: f32, aspect_ratio: f32, near: f32, far: f32) -> Self {
-        todo!("perspective");
+        let mut p = Mat4::default(0.0);
+
+        let tan_half_fovy = f32::tan(fov / 2.);
+
+        // right handed
+        p.c0.x = 1. / (aspect_ratio * tan_half_fovy);
+        p.c1.y = 1. / tan_half_fovy;
+        p.c2.z = -(far + near) / (far - near);
+        p.c3.z = -(2. * far * near) / (far - near);
+        p.c2.w = -1.;
+
+        p
     }
 
     pub fn default(n: f32) -> Self {
