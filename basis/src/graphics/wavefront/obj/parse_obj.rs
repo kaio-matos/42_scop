@@ -247,7 +247,7 @@ mod tests {
             # v 0.232406 1.119982 1.602814
 ";
 
-        let result = parse_obj(file).expect("This should work");
+        let result = parse_obj(file.to_string()).expect("This should work");
 
         assert_eq!(result.vertices.len(), 0);
         assert_eq!(result.vertices_texture.len(), 0);
@@ -266,7 +266,7 @@ mod tests {
             v 0.232406 -0.745504 2.843098
 ";
 
-        let result = parse_obj(file).expect("This should work");
+        let result = parse_obj(file.to_string()).expect("This should work");
 
         assert_eq!(result.name, Some("cube39".to_string()));
     }
@@ -282,7 +282,7 @@ mod tests {
             v 0.232406 -0.745504 2.843098
 ";
 
-        let result = parse_obj(file).expect("This should work");
+        let result = parse_obj(file.to_string()).expect("This should work");
 
         assert_eq!(
             result.mtls_identifiers,
@@ -316,7 +316,7 @@ mod tests {
             vp      0.500000       0.500000
 ";
 
-        let result = parse_obj(file).expect("This should work");
+        let result = parse_obj(file.to_string()).expect("This should work");
 
         assert_eq!(result.vertices.len(), 4);
         assert_eq!(result.vertices_texture.len(), 4);
@@ -360,7 +360,7 @@ mod tests {
             f 1//1 2//2 3//3 4//4
 ";
 
-        let result = parse_obj(file).expect("This should work");
+        let result = parse_obj(file.to_string()).expect("This should work");
 
         assert_eq!(result.faces[0].sides[0], FaceSide::new(1, 1, 1));
         assert_eq!(result.faces[0].sides[1], FaceSide::new(2, 2, 2));
@@ -389,7 +389,7 @@ mod tests {
             f 8 7 6 5
 ";
 
-        let result = parse_obj(file).expect("This should work");
+        let result = parse_obj(file.to_string()).expect("This should work");
 
 
         assert_eq!(result.faces[0].sides[0], FaceSide::new(1, 0, 0));
@@ -420,7 +420,7 @@ mod tests {
             f 1/1/1 2/2/2 3//3 4//4
 ";
 
-        let result = parse_obj(file);
+        let result = parse_obj(file.to_string());
 
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("Illegal to give vertex texture for some vertices, but not all"));
@@ -450,7 +450,7 @@ mod tests {
             f 7/20/7 5/19/5 2/18/2 1/17/1 
 ";
 
-        let result = parse_obj(file).expect("This should work");
+        let result = parse_obj(file.to_string()).expect("This should work");
 
         assert_eq!(result.faces.len(), 6);
         assert_eq!(result.faces[0].material_name, Some("4bed15".to_string()));
