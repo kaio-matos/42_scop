@@ -7,6 +7,7 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
     let lines = data.split("\n").map(|s| s.trim()).filter(|s| !s.is_empty());
     let mut previous_line = Option::None;
     let mut current_line: usize = 1;
+    let mut smoothing_group: usize = 0;
     for line in lines {
         let mut tokens = line
             .split(" ")
@@ -83,7 +84,10 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
             }
             "f" => {
                 // Parse face
-                let result = helpers::parse_face(&mut tokens, previous_line, current_line)?;
+                let mut result = helpers::parse_face(&mut tokens, previous_line, current_line)?;
+                if smoothing_group != 0 {
+                    result.smoothing_group = Some(smoothing_group);
+                }
                 obj.faces.push(result);
                 Ok(())
             }
@@ -142,7 +146,8 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
             }
             "s" => {
                 // Parse smoothing group
-                todo!("Implement s");
+                smoothing_group = helpers::parse_smoothing_group(&mut tokens, current_line)?;
+                Ok(())
             }
             "mg" => {
                 // Parse merging group
@@ -459,5 +464,43 @@ mod tests {
         assert_eq!(result.faces[3].material_name, None);
         assert_eq!(result.faces[4].material_name, Some("4602e3".to_string()));
         assert_eq!(result.faces[5].material_name, Some("c41dde".to_string()));
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn it_should_store_face_including_group_id() {
+        let file = "
+            # This is a comment
+
+            mtllib cube.mtl
+            o cube39
+            v      -5.000000       5.000000       0.000000
+            vt     -5.000000       5.000000       0.000000
+            vn      0.000000       0.000000       1.000000
+            vp      0.210000       3.590000
+            s off
+            usemtl 4bed15
+            f 1/4/1 2/3/2 3/2/3 4/1/4 
+            usemtl 2daec2
+            f 2/8/2 5/7/5 6/6/6 3/5/3 
+            s 1
+            f 5/12/5 7/11/7 8/10/8 6/9/6 
+            f 4/24/4 3/23/3 6/22/6 8/21/8 
+            usemtl 4602e3
+            s 2
+            f 7/16/7 1/15/1 4/14/4 8/13/8 
+            usemtl c41dde
+            f 7/20/7 5/19/5 2/18/2 1/17/1 
+";
+
+        let result = parse_obj(file.to_string()).expect("This should work");
+
+        assert_eq!(result.faces.len(), 6);
+        assert_eq!(result.faces[0].smoothing_group, None);
+        assert_eq!(result.faces[1].smoothing_group, None);
+        assert_eq!(result.faces[2].smoothing_group, Some(1));
+        assert_eq!(result.faces[3].smoothing_group, Some(1));
+        assert_eq!(result.faces[4].smoothing_group, Some(2));
+        assert_eq!(result.faces[4].smoothing_group, Some(2));
     }
 }

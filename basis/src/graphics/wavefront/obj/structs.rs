@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::graphics::wavefront::{
     self,
     mtl::{Material, MTL},
@@ -15,6 +17,7 @@ pub enum ParseError {
     InvalidFaceSide(usize, String),
     InvalidFaceMaterial(usize, String),
     InvalidGroup(usize, String),
+    InvalidSmoothingGroup(usize, String),
     InvalidMaterialLibrary(usize, String),
 }
 impl std::error::Error for ParseError {}
@@ -67,6 +70,9 @@ impl std::fmt::Display for ParseError {
             }
             ParseError::InvalidGroup(line, group) => {
                 write!(f, "Invalid group at line {}: {}", line, group)
+            }
+            ParseError::InvalidSmoothingGroup(line, group) => {
+                write!(f, "Invalid smoothing group at line {}: {}", line, group)
             }
             ParseError::InvalidMaterialLibrary(line, material_library) => {
                 write!(
@@ -157,6 +163,12 @@ impl PartialEq for VerticeTexture {
 ///////////////////////////////////
 
 #[derive(Debug, Clone, Default)]
+pub struct SmoothingGroup<'a> {
+    pub id: usize,
+    pub faces: Vec<&'a Face>,
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct FaceSide {
     pub v: usize,
     pub vt: usize,
@@ -178,6 +190,7 @@ pub struct Face {
     pub sides: Vec<FaceSide>,
     pub material_name: Option<String>,
     pub material: Option<Material>,
+    pub smoothing_group: Option<usize>,
 }
 impl Face {
     pub fn partial_new(sides: Vec<FaceSide>, material_name: Option<String>) -> Face {
@@ -185,6 +198,7 @@ impl Face {
             sides,
             material_name,
             material: None,
+            smoothing_group: None,
         }
     }
 
@@ -271,5 +285,15 @@ impl OBJ {
             }
         }
         self
+    }
+
+    pub fn get_smoothing_group_by_id(&self, id: usize) -> SmoothingGroup {
+        let faces = self
+            .faces
+            .iter()
+            .filter(|face| face.smoothing_group == Some(id))
+            .collect::<Vec<&Face>>();
+
+        SmoothingGroup { id, faces }
     }
 }

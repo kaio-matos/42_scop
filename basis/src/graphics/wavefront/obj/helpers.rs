@@ -118,3 +118,19 @@ pub fn parse_face(
 
     Ok(face)
 }
+
+pub fn parse_smoothing_group(
+    tokens: &mut IntoIter<&str>,
+    line_n: usize,
+) -> Result<usize, ParseError> {
+    match tokens.next() {
+        None => Ok(0_usize),
+        Some("off") => Ok(0_usize),
+        Some(str) => {
+            let id = str.parse::<usize>().map_err(|_| {
+                ParseError::InvalidSmoothingGroup(line_n, "Invalid smoothing group".to_string())
+            })?;
+            Ok(id)
+        }
+    }
+}
