@@ -18,6 +18,34 @@ use std::sync::atomic::AtomicBool;
 static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Controller {
+    Element,
+    View,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Control {
+    controller: Controller,
+    element: math::Mat4,
+    view: math::Mat4,
+}
+impl Control {
+    fn mat(&self) -> &math::Mat4 {
+        match self.controller {
+            Controller::Element => &self.element,
+            Controller::View => &self.view,
+        }
+    }
+
+    fn mmat(&mut self) -> &mut math::Mat4 {
+        match self.controller {
+            Controller::Element => &mut self.element,
+            Controller::View => &mut self.view,
+        }
+    }
+}
+
 fn draw_square() {
     #[rustfmt::skip]
     let square: [f32; 16] = [
@@ -137,7 +165,7 @@ fn draw_elements(vertices: &[f32], indices: &[u32]) {
     vao.unbind();
 }
 
-fn draw(window: &Window, obj: &wavefront::obj::OBJ, mat: math::Mat4) {
+fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
     let cube_positions = [
         math::Vec3::new(0.0, 0.0, 0.0),
         math::Vec3::new(2.0, 5.0, -15.0),
@@ -168,8 +196,10 @@ fn draw(window: &Window, obj: &wavefront::obj::OBJ, mat: math::Mat4) {
         100.,
     );
 
-    view_mat.translate(math::Vec3::new(0.0, 0.0, -3.0));
-    view_mat.multiply(mat);
+    if control.controller == Controller::View {
+        view_mat.multiply(*control.mat());
+    }
+
     shader
         .get_uniform_location("view")
         .uniform_matrix4fv(&view_mat);
@@ -180,6 +210,10 @@ fn draw(window: &Window, obj: &wavefront::obj::OBJ, mat: math::Mat4) {
     let time = window.glfw.get_time() as f32;
     let vertices = obj.get_raw_vertices();
     let indices = obj.get_raw_indices();
+
+    if control.controller == Controller::Element {
+        model_mat.multiply(*control.mat());
+    }
 
     for i in 1..100 {
         let random_index = (basis::gen_u32(i) % cube_positions.len() as u32) as usize;
@@ -203,76 +237,139 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     glw::enable(gl::DEPTH_TEST);
 
-    let mut mat = math::Mat4::identity();
     // let obj = wavefront::obj::load("scop/src/resources/42/42.obj")?;
     let obj =
         wavefront::obj::load("scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj")?;
-    let is_wireframe = AtomicBool::new(false);
-    let pressed_up = AtomicBool::new(false);
-    let pressed_down = AtomicBool::new(false);
-    let pressed_left = AtomicBool::new(false);
-    let pressed_right = AtomicBool::new(false);
-    let pressed_shift_left = AtomicBool::new(false);
-    let pressed_shift_right = AtomicBool::new(false);
+    let mut is_wireframe = false;
+    let mut pressed_up = false;
+    let mut pressed_down = false;
+    let mut pressed_left = false;
+    let mut pressed_right = false;
+    let mut pressed_shift_up = false;
+    let mut pressed_shift_down = false;
+    let mut pressed_shift_left = false;
+    let mut pressed_shift_right = false;
+    let mut control = Control {
+        controller: Controller::View,
+        element: math::Mat4::identity(),
+        view: *math::Mat4::identity().translate(math::Vec3::new(0.0, 0.0, -5.0)),
+    };
 
     while !window.should_close() {
         glw::clear_color(0.2, 0.3, 0.3, 1.0);
         glw::clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-        let pressed_down_v = pressed_down.load(std::sync::atomic::Ordering::Relaxed);
-        let pressed_up_v = pressed_up.load(std::sync::atomic::Ordering::Relaxed);
-        let pressed_left_v = pressed_left.load(std::sync::atomic::Ordering::Relaxed);
-        let pressed_right_v = pressed_right.load(std::sync::atomic::Ordering::Relaxed);
-        let pressed_shift_left_v = pressed_shift_left.load(std::sync::atomic::Ordering::Relaxed);
-        let pressed_shift_right_v = pressed_shift_right.load(std::sync::atomic::Ordering::Relaxed);
-
-        if pressed_up_v
-            || pressed_down_v
-            || pressed_left_v
-            || pressed_right_v
-            || pressed_shift_left_v
-            || pressed_shift_right_v
+        println!("[CONTROLLER] {:?}", control.controller);
+        if pressed_up
+            || pressed_down
+            || pressed_left
+            || pressed_right
+            || pressed_shift_up
+            || pressed_shift_down
+            || pressed_shift_left
+            || pressed_shift_right
         {
-            if pressed_up_v {
-                println!("[PRESSING]: Page up");
-                mat.translate(math::Vec3::new(0.0, 0.0, 0.1));
-            } else if pressed_down_v {
-                println!("[PRESSING]: Page down");
-                mat.translate(math::Vec3::new(0.0, 0.0, -0.1));
-            } else if pressed_left_v {
+            if pressed_up {
+                println!("[PRESSING]: Up");
+                control.mmat().translate(math::Vec3::new(0.0, -0.1, 0.0));
+            } else if pressed_down {
+                println!("[PRESSING]: Down");
+                control.mmat().translate(math::Vec3::new(0.0, 0.1, 0.0));
+            } else if pressed_left {
                 println!("[PRESSING]: Left");
-                mat.translate(math::Vec3::new(0.1, 0.0, 0.0));
-            } else if pressed_right_v {
+                control.mmat().translate(math::Vec3::new(0.1, 0.0, 0.0));
+            } else if pressed_right {
                 println!("[PRESSING]: Right");
-                mat.translate(math::Vec3::new(-0.1, 0.0, 0.0));
-            } else if pressed_shift_left_v {
-                println!("[PRESSING]: Shift Left");
-                mat.rotate(-1.0_f32.to_radians(), math::Vec3::new(0.0, 0.0, 1.0));
-            } else if pressed_shift_right_v {
-                println!("[PRESSING]: Shift Right");
-                mat.rotate(1.0_f32.to_radians(), math::Vec3::new(0.0, 0.0, 1.0));
+                control.mmat().translate(math::Vec3::new(-0.1, 0.0, 0.0));
+            } else if pressed_shift_up {
+                println!("[PRESSING]: Forward");
+                control.mmat().translate(math::Vec3::new(0.0, 0.0, 0.1));
+            } else if pressed_shift_down {
+                println!("[PRESSING]: Backward");
+                control.mmat().translate(math::Vec3::new(0.0, 0.0, -0.1));
+            } else if pressed_shift_left {
+                println!("[PRESSING]: Shift Left (Rotate Left)");
+                control
+                    .mmat()
+                    .rotate(-1.0_f32.to_radians(), math::Vec3::new(0.0, 1.0, 0.0));
+            } else if pressed_shift_right {
+                println!("[PRESSING]: Shift Right (Rotate Right)");
+                control
+                    .mmat()
+                    .rotate(1.0_f32.to_radians(), math::Vec3::new(0.0, 1.0, 0.0));
             }
 
-            println!("Mat {}", mat);
+            println!("Mat {}", control.mmat());
         }
 
         // learning_05::draw_triangles_with_orthographic(&window);
-        draw(&window, &obj, mat);
+        draw(&window, &obj, control);
 
-        window.update(&|event| match event {
+        window.update(&mut |event| match event {
             graphics::glfw::WindowEvent::Key(
                 graphics::glfw::Key::D,
                 _,
                 graphics::glfw::Action::Press,
                 _,
             ) => {
-                let value = is_wireframe.load(std::sync::atomic::Ordering::Relaxed);
-                if value {
-                    glw::polygon_mode(gl::FRONT_AND_BACK, gl::FILL);
-                } else {
+                is_wireframe = !is_wireframe;
+                if is_wireframe {
                     glw::polygon_mode(gl::FRONT_AND_BACK, gl::LINE);
+                } else {
+                    glw::polygon_mode(gl::FRONT_AND_BACK, gl::FILL);
                 }
-                is_wireframe.store(!value, std::sync::atomic::Ordering::Relaxed);
+            }
+
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::Tab,
+                _,
+                graphics::glfw::Action::Press,
+                _,
+            ) => match control.controller {
+                Controller::Element => {
+                    control.controller = Controller::View;
+                }
+                Controller::View => {
+                    control.controller = Controller::Element;
+                }
+            },
+
+            //
+            // Press Shift Up
+            //
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::Up,
+                _,
+                graphics::glfw::Action::Press,
+                graphics::glfw::Modifiers::Shift,
+            ) => pressed_shift_up = true,
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::Up,
+                _,
+                graphics::glfw::Action::Release,
+                graphics::glfw::Modifiers::Shift,
+            ) => {
+                pressed_up = false;
+                pressed_shift_up = false;
+            }
+
+            //
+            // Press Shift Down
+            //
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::Down,
+                _,
+                graphics::glfw::Action::Press,
+                graphics::glfw::Modifiers::Shift,
+            ) => pressed_shift_down = true,
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::Down,
+                _,
+                graphics::glfw::Action::Release,
+                graphics::glfw::Modifiers::Shift,
+            ) => {
+                pressed_down = false;
+                pressed_shift_down = false;
             }
 
             //
@@ -283,17 +380,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _,
                 graphics::glfw::Action::Press,
                 graphics::glfw::Modifiers::Shift,
-            ) => {
-                pressed_shift_left.store(true, std::sync::atomic::Ordering::Relaxed);
-            }
+            ) => pressed_shift_left = true,
             graphics::glfw::WindowEvent::Key(
                 graphics::glfw::Key::Left,
                 _,
                 graphics::glfw::Action::Release,
                 graphics::glfw::Modifiers::Shift,
             ) => {
-                pressed_left.store(false, std::sync::atomic::Ordering::Relaxed);
-                pressed_shift_left.store(false, std::sync::atomic::Ordering::Relaxed);
+                pressed_left = false;
+                pressed_shift_left = false;
             }
 
             //
@@ -304,17 +399,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _,
                 graphics::glfw::Action::Press,
                 graphics::glfw::Modifiers::Shift,
-            ) => {
-                pressed_shift_right.store(true, std::sync::atomic::Ordering::Relaxed);
-            }
+            ) => pressed_shift_right = true,
+
             graphics::glfw::WindowEvent::Key(
                 graphics::glfw::Key::Right,
                 _,
                 graphics::glfw::Action::Release,
                 graphics::glfw::Modifiers::Shift,
             ) => {
-                pressed_right.store(false, std::sync::atomic::Ordering::Relaxed);
-                pressed_shift_right.store(false, std::sync::atomic::Ordering::Relaxed);
+                pressed_right = false;
+                pressed_shift_right = false;
             }
 
             //
@@ -325,17 +419,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _,
                 graphics::glfw::Action::Press,
                 _,
-            ) => {
-                pressed_up.store(true, std::sync::atomic::Ordering::Relaxed);
-            }
+            ) => pressed_up = true,
+
             graphics::glfw::WindowEvent::Key(
                 graphics::glfw::Key::Up,
                 _,
                 graphics::glfw::Action::Release,
                 _,
-            ) => {
-                pressed_up.store(false, std::sync::atomic::Ordering::Relaxed);
-            }
+            ) => pressed_up = false,
 
             //
             // Press Down
@@ -345,16 +436,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _,
                 graphics::glfw::Action::Press,
                 _,
-            ) => {
-                pressed_down.store(true, std::sync::atomic::Ordering::Relaxed);
-            }
+            ) => pressed_down = true,
+
             graphics::glfw::WindowEvent::Key(
                 graphics::glfw::Key::Down,
                 _,
                 graphics::glfw::Action::Release,
                 _,
             ) => {
-                pressed_down.store(false, std::sync::atomic::Ordering::Relaxed);
+                pressed_down = false;
+                pressed_shift_down = false;
             }
 
             //
@@ -365,17 +456,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _,
                 graphics::glfw::Action::Press,
                 _,
-            ) => {
-                pressed_left.store(true, std::sync::atomic::Ordering::Relaxed);
-            }
+            ) => pressed_left = true,
+
             graphics::glfw::WindowEvent::Key(
                 graphics::glfw::Key::Left,
                 _,
                 graphics::glfw::Action::Release,
                 _,
             ) => {
-                pressed_left.store(false, std::sync::atomic::Ordering::Relaxed);
-                pressed_shift_left.store(false, std::sync::atomic::Ordering::Relaxed);
+                pressed_left = false;
+                pressed_shift_left = false;
             }
 
             //
@@ -386,17 +476,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _,
                 graphics::glfw::Action::Press,
                 _,
-            ) => {
-                pressed_right.store(true, std::sync::atomic::Ordering::Relaxed);
-            }
+            ) => pressed_right = true,
+
             graphics::glfw::WindowEvent::Key(
                 graphics::glfw::Key::Right,
                 _,
                 graphics::glfw::Action::Release,
                 _,
             ) => {
-                pressed_right.store(false, std::sync::atomic::Ordering::Relaxed);
-                pressed_shift_right.store(false, std::sync::atomic::Ordering::Relaxed);
+                pressed_right = false;
+                pressed_shift_right = false;
             }
 
             _ => {}

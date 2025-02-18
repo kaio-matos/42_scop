@@ -33,13 +33,19 @@ impl Window {
         self.window_handle.should_close()
     }
 
-    pub fn update(&mut self, on_event: &dyn Fn(&WindowEvent) -> ()) {
+    pub fn update<F>(&mut self, on_event: &mut F)
+    where
+        F: FnMut(&WindowEvent),
+    {
         self.process_events(on_event);
         self.glfw.poll_events();
         self.window_handle.swap_buffers();
     }
 
-    fn process_events(&mut self, on_event: &dyn Fn(&WindowEvent) -> ()) {
+    fn process_events<F>(&mut self, on_event: &mut F)
+    where
+        F: FnMut(&WindowEvent),
+    {
         for (_, event) in glfw::flush_messages(&self.events) {
             on_event(&event);
             match event {
