@@ -166,19 +166,6 @@ fn draw_elements(vertices: &[f32], indices: &[u32]) {
 }
 
 fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
-    let cube_positions = [
-        math::Vec3::new(0.0, 0.0, 0.0),
-        math::Vec3::new(2.0, 5.0, -15.0),
-        math::Vec3::new(-1.5, -2.2, -2.5),
-        math::Vec3::new(-3.8, -2.0, -12.3),
-        math::Vec3::new(2.4, -0.4, -3.5),
-        math::Vec3::new(-1.7, 3.0, -7.5),
-        math::Vec3::new(1.3, -2.0, -2.5),
-        math::Vec3::new(1.5, 2.0, -2.5),
-        math::Vec3::new(1.5, 0.2, -1.5),
-        math::Vec3::new(-1.3, 1.0, -1.5),
-    ];
-
     let shader = glw::Shader::new();
     shader
         .link_multiple(vec![
@@ -196,9 +183,7 @@ fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
         100.,
     );
 
-    if control.controller == Controller::View {
-        view_mat.multiply(*control.mat());
-    }
+    view_mat.multiply(control.view);
 
     shader
         .get_uniform_location("view")
@@ -211,21 +196,13 @@ fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
     let vertices = obj.get_raw_vertices();
     let indices = obj.get_raw_indices();
 
-    if control.controller == Controller::Element {
-        model_mat.multiply(*control.mat());
-    }
+    model_mat.multiply(control.element);
 
-    for i in 1..100 {
-        let random_index = (basis::gen_u32(i) % cube_positions.len() as u32) as usize;
-        model_mat.translate(cube_positions[random_index]);
-        model_mat.rotate(time * 50_f32.to_radians(), math::Vec3::new(0.0, 0.0, 1.0));
+    shader
+        .get_uniform_location("model")
+        .uniform_matrix4fv(&model_mat);
 
-        shader
-            .get_uniform_location("model")
-            .uniform_matrix4fv(&model_mat);
-
-        draw_elements(&vertices, &indices);
-    }
+    draw_elements(&vertices, &indices);
 
     shader.unbind();
 }
@@ -238,8 +215,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     glw::enable(gl::DEPTH_TEST);
 
     // let obj = wavefront::obj::load("scop/src/resources/42/42.obj")?;
-    let obj =
-        wavefront::obj::load("scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj")?;
+    // let obj =
+    //     wavefront::obj::load("scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj")?;
+    let obj = wavefront::obj::load("scop/src/resources/teapot/teapot.obj")?;
+
     let mut is_wireframe = false;
     let mut pressed_up = false;
     let mut pressed_down = false;
