@@ -1,6 +1,7 @@
 mod learning_04;
 mod learning_05;
 
+use basis::gen_u32;
 use basis::graphics;
 use basis::math;
 
@@ -166,6 +167,19 @@ fn draw_elements(vertices: &[f32], indices: &[u32]) {
 }
 
 fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
+    let cube_positions = [
+        math::Vec3::new(0.0, 0.0, 0.0),
+        math::Vec3::new(2.0, 5.0, -15.0),
+        math::Vec3::new(-1.5, -2.2, -2.5),
+        math::Vec3::new(-3.8, -2.0, -12.3),
+        math::Vec3::new(2.4, -0.4, -3.5),
+        math::Vec3::new(-1.7, 3.0, -7.5),
+        math::Vec3::new(1.3, -2.0, -2.5),
+        math::Vec3::new(1.5, 2.0, -2.5),
+        math::Vec3::new(1.5, 0.2, -1.5),
+        math::Vec3::new(-1.3, 1.0, -1.5),
+    ];
+
     let shader = glw::Shader::new();
     shader
         .link_multiple(vec![
@@ -174,8 +188,16 @@ fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
         ])
         .unwrap();
     shader.bind();
+    let time = window.glfw.get_time() as f32;
+    let sintime = f32::sin(time);
+    let costime = f32::cos(time);
+
     let mut model_mat = math::Mat4::identity();
-    let mut view_mat = math::Mat4::identity();
+    let mut view_mat = math::Mat4::look_at(
+        math::Vec3::new(sintime * 10., 0.0, costime * 10.),
+        math::Vec3::new(0.0, 0.0, 0.0),
+        math::Vec3::new(0.0, 1.0, 0.0),
+    );
     let mut projection_mat = math::Mat4::perspective(
         45.0_f32.to_radians(),
         (WINDOW_WIDTH / WINDOW_HEIGHT) as f32,
@@ -184,6 +206,7 @@ fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
     );
 
     view_mat.multiply(control.view);
+    // println!("View: {}", view_mat);
 
     shader
         .get_uniform_location("view")
@@ -192,17 +215,19 @@ fn draw(window: &Window, obj: &wavefront::obj::OBJ, control: Control) {
         .get_uniform_location("projection")
         .uniform_matrix4fv(&projection_mat);
 
-    let time = window.glfw.get_time() as f32;
     let vertices = obj.get_raw_vertices();
     let indices = obj.get_raw_indices();
 
     model_mat.multiply(control.element);
 
-    shader
-        .get_uniform_location("model")
-        .uniform_matrix4fv(&model_mat);
-
-    draw_elements(&vertices, &indices);
+    for i in 0..10 {
+        model_mat.translate(cube_positions[i]);
+        model_mat.rotate(20.0 * i as f32, math::Vec3::new(1.0, 0.3, 0.5));
+        shader
+            .get_uniform_location("model")
+            .uniform_matrix4fv(&model_mat);
+        draw_elements(&vertices, &indices);
+    }
 
     shader.unbind();
 }
@@ -215,9 +240,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     glw::enable(gl::DEPTH_TEST);
 
     // let obj = wavefront::obj::load("scop/src/resources/42/42.obj")?;
-    // let obj =
-    //     wavefront::obj::load("scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj")?;
-    let obj = wavefront::obj::load("scop/src/resources/teapot/teapot.obj")?;
+    let obj =
+        wavefront::obj::load("scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj")?;
+    // let obj = wavefront::obj::load("scop/src/resources/teapot/teapot.obj")?;
+    // let obj = wavefront::obj::load("scop/src/resources/teapot2/teapot2.obj")?;
 
     let mut is_wireframe = false;
     let mut pressed_up = false;
@@ -228,17 +254,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pressed_shift_down = false;
     let mut pressed_shift_left = false;
     let mut pressed_shift_right = false;
+    let mut pressed_pageup = false;
+    let mut pressed_pagedown = false;
     let mut control = Control {
         controller: Controller::View,
         element: math::Mat4::identity(),
-        view: *math::Mat4::identity().translate(math::Vec3::new(0.0, 0.0, -5.0)),
+        // view: *math::Mat4::identity().translate(math::Vec3::new(0.0, 0.0, -5.0)),
+        view: math::Mat4::identity(),
     };
 
     while !window.should_close() {
         glw::clear_color(0.2, 0.3, 0.3, 1.0);
         glw::clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-        println!("[CONTROLLER] {:?}", control.controller);
+        // println!("[CONTROLLER] {:?}", control.controller);
         if pressed_up
             || pressed_down
             || pressed_left
@@ -247,6 +276,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             || pressed_shift_down
             || pressed_shift_left
             || pressed_shift_right
+            || pressed_pageup
+            || pressed_pagedown
         {
             if pressed_up {
                 println!("[PRESSING]: Up");
@@ -276,6 +307,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 control
                     .mmat()
                     .rotate(1.0_f32.to_radians(), math::Vec3::new(0.0, 1.0, 0.0));
+            } else if pressed_pageup {
+                println!("[PRESSING]: Page up (Rotate Forward)");
+                control
+                    .mmat()
+                    .rotate(1.0_f32.to_radians(), math::Vec3::new(1.0, 0.0, 0.0));
+            } else if pressed_pagedown {
+                println!("[PRESSING]: Page down (Rotate Backwards)");
+                control
+                    .mmat()
+                    .rotate(1.0_f32.to_radians(), math::Vec3::new(-1.0, 0.0, 0.0));
             }
 
             println!("Mat {}", control.mmat());
@@ -465,6 +506,44 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ) => {
                 pressed_right = false;
                 pressed_shift_right = false;
+            }
+
+            //
+            // Press PageUp
+            //
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::PageUp,
+                _,
+                graphics::glfw::Action::Press,
+                _,
+            ) => pressed_pageup = true,
+
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::PageUp,
+                _,
+                graphics::glfw::Action::Release,
+                _,
+            ) => {
+                pressed_pageup = false;
+            }
+
+            //
+            // Press PageDown
+            //
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::PageDown,
+                _,
+                graphics::glfw::Action::Press,
+                _,
+            ) => pressed_pagedown = true,
+
+            graphics::glfw::WindowEvent::Key(
+                graphics::glfw::Key::PageDown,
+                _,
+                graphics::glfw::Action::Release,
+                _,
+            ) => {
+                pressed_pagedown = false;
             }
 
             _ => {}
