@@ -10,6 +10,9 @@
 - Projection Matrixes (math behind glm)
     - https://www.songho.ca/opengl/gl_projectionmatrix.html
 
+- Linear Algebra
+    - https://www.3blue1brown.com/topics/linear-algebra
+
 - Extra explanations about projection matrixes
     - https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/points-vectors-and-normals.html
     - https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/projection-matrix-introduction.html
