@@ -79,6 +79,32 @@ impl Mat4 {
         }
     }
 
+    pub fn look_at(position: Vec3, target: Vec3, up_dir: Vec3) -> Self {
+        let mut look_at_mat = Mat4::identity();
+
+        let forward = position.subtract(target).normalize();
+        let left = up_dir.cross(forward).normalize();
+        let up = forward.cross(left);
+
+        look_at_mat.c0.x = left.x;
+        look_at_mat.c1.x = left.y;
+        look_at_mat.c2.x = left.z;
+        look_at_mat.c3.x = -left.x * position.x - left.y * position.y - left.z * position.z;
+
+        look_at_mat.c0.y = up.x;
+        look_at_mat.c1.y = up.y;
+        look_at_mat.c2.y = up.z;
+        look_at_mat.c3.y = -up.x * position.x - up.y * position.y - up.z * position.z;
+
+        look_at_mat.c0.z = forward.x;
+        look_at_mat.c1.z = forward.y;
+        look_at_mat.c2.z = forward.z;
+        look_at_mat.c3.z =
+            -forward.x * position.x - forward.y * position.y - forward.z * position.z;
+
+        look_at_mat
+    }
+
     pub fn multiply(&mut self, mat: Mat4) -> &mut Self {
         let mut new = Mat4::default(0.0);
 
