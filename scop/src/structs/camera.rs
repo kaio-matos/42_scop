@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use crate::traits::*;
 use basis::{
     graphics::window::Window,
-    math::{self, Mat4, Vec3},
+    math::{self, Mat4, Vec3, VectorFunctions},
 };
 
 #[derive(Debug, Clone)]
