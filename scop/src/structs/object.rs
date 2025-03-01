@@ -1,8 +1,15 @@
 use std::{cell::RefCell, mem, ptr, rc::Rc};
 
-use basis::graphics::{glw, wavefront, window::Window};
+use basis::{
+    graphics::{glw, wavefront, window::Window},
+    math::Vec3,
+};
 
+#[derive(Debug, Clone)]
 pub struct Object {
+    pub position: Vec3,
+    pub rgb: Vec3, // TODO: Implement proper material support
+
     window: Rc<RefCell<Window>>,
     model: wavefront::obj::OBJ,
 
@@ -13,6 +20,9 @@ pub struct Object {
 impl Object {
     pub fn new(window: Rc<RefCell<Window>>, model: wavefront::obj::OBJ) -> Object {
         let mut object = Object {
+            position: Vec3::default(0.0),
+            rgb: Vec3::default(0.0),
+
             window,
             model,
             cached_vertices: Vec::default(),
@@ -22,7 +32,16 @@ impl Object {
         object
     }
 
+    pub fn color(&mut self, new_color: Vec3) {
+        self.rgb = new_color;
+    }
+
+    pub fn translate(&mut self, new_pos: Vec3) {
+        self.position = new_pos;
+    }
+
     pub fn draw(&self) {
+        // TODO: Store vao reference into `self` after the first draw call
         let vao = glw::Vao::new();
         vao.bind();
         let vbo = glw::BufferObject::new(gl::ARRAY_BUFFER, gl::STATIC_DRAW);

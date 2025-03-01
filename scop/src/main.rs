@@ -24,19 +24,6 @@ static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;
 
 fn draw(window: &Window, obj: &structs::Object, camera: &Camera) {
-    let cube_positions = [
-        math::Vec3::new(0.0, 0.0, 0.0),
-        math::Vec3::new(2.0, 5.0, -15.0),
-        math::Vec3::new(-1.5, -2.2, -2.5),
-        math::Vec3::new(-3.8, -2.0, -12.3),
-        math::Vec3::new(2.4, -0.4, -3.5),
-        math::Vec3::new(-1.7, 3.0, -7.5),
-        math::Vec3::new(1.3, -2.0, -2.5),
-        math::Vec3::new(1.5, 2.0, -2.5),
-        math::Vec3::new(1.5, 0.2, -1.5),
-        math::Vec3::new(-1.3, 1.0, -1.5),
-    ];
-
     let shader = glw::Shader::new();
     shader
         .link_multiple(vec![
@@ -61,23 +48,14 @@ fn draw(window: &Window, obj: &structs::Object, camera: &Camera) {
         .get_uniform_location("projection")
         .uniform_matrix4fv(&projection_mat);
 
-    // model_mat.multiply(control.element);
-
-    for i in 0..10 {
-        let mut rgb = math::Vec3::new(0.5, 0.5, 0.5);
-        if i == 0 {
-            rgb.x = 1.0;
-            rgb.y = 1.0;
-        }
-        shader
-            .get_uniform_location("color")
-            .uniform3f(rgb.x, rgb.y, rgb.z);
-        model_mat.translate(cube_positions[i]);
-        shader
-            .get_uniform_location("model")
-            .uniform_matrix4fv(&model_mat);
-        obj.draw()
-    }
+    shader
+        .get_uniform_location("color")
+        .uniform3f(obj.rgb.x, obj.rgb.y, obj.rgb.z);
+    model_mat.translate(obj.position);
+    shader
+        .get_uniform_location("model")
+        .uniform_matrix4fv(&model_mat);
+    obj.draw();
 
     shader.unbind();
 }
@@ -97,6 +75,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         window.clone(),
         wavefront::obj::load("scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj")?,
     );
+    let mut objs = Vec::new();
+
+    let positions = [
+        math::Vec3::new(0.0, 0.0, 0.0),
+        math::Vec3::new(2.0, 5.0, -15.0),
+        math::Vec3::new(-1.5, -2.2, -2.5),
+        math::Vec3::new(-3.8, -2.0, -12.3),
+        math::Vec3::new(2.4, -0.4, -3.5),
+        math::Vec3::new(-1.7, 3.0, -7.5),
+        math::Vec3::new(1.3, -2.0, -2.5),
+        math::Vec3::new(1.5, 2.0, -2.5),
+        math::Vec3::new(1.5, 0.2, -1.5),
+        math::Vec3::new(-1.3, 1.0, -1.5),
+    ];
+
+    for i in 0..positions.len() {
+        let mut new = obj.clone();
+        let mut rgb = math::Vec3::new(0.5, 0.5, 0.5);
+        if i == 0 {
+            rgb.x = 1.0;
+            rgb.y = 1.0;
+        }
+        new.color(rgb);
+        new.translate(*positions.get(i).unwrap());
+        objs.push(new);
+    }
+
     let mut is_wireframe = false;
     let mut camera = Camera::new(
         math::Vec3::new(0.0, 0.0, 3.0),
@@ -155,7 +160,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             camera.move_right()
         }
 
-        draw(&window.borrow_mut(), &obj, &camera);
+        if window
+            .borrow_mut()
+            .on_key_hold(graphics::glfw::Key::W, graphics::glfw::Modifiers::Control)
+        {
+            camera.move_forward()
+        }
+
+        if window
+            .borrow_mut()
+            .on_key_hold(graphics::glfw::Key::S, graphics::glfw::Modifiers::Control)
+        {
+            camera.move_backward()
+        }
+
+        for obj in objs.iter() {
+            draw(&window.borrow_mut(), &obj, &camera);
+        }
 
         window.borrow_mut().update(&mut |_event| {});
     }
