@@ -2,17 +2,32 @@ use std::{cell::RefCell, mem, ptr, rc::Rc};
 
 use basis::{
     graphics::{glw, wavefront, window::Window},
-    math::Vec3,
+    math::{Vec3, VectorFunctions},
 };
+
+#[derive(Debug, Clone, Default, Copy)]
+pub struct Rotation {
+    pub radians: Vec3,
+    pub axis: Vec3,
+}
+
+impl Rotation {
+    pub fn new(radians: Vec3, axis: Vec3) -> Self {
+        Rotation { radians, axis }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Object {
     pub position: Vec3,
+    pub rotation: Rotation,
+    pub scale: Vec3,
     pub rgb: Vec3, // TODO: Implement proper material support
 
     window: Rc<RefCell<Window>>,
     model: wavefront::obj::OBJ,
 
+    cached_center: Vec3,
     cached_vertices: Vec<f32>,
     cached_indices: Vec<u32>,
 }
@@ -20,15 +35,19 @@ pub struct Object {
 impl Object {
     pub fn new(window: Rc<RefCell<Window>>, model: wavefront::obj::OBJ) -> Object {
         let mut object = Object {
-            position: Vec3::default(0.0),
-            rgb: Vec3::default(0.0),
+            position: Vec3::default(),
+            rotation: Rotation::default(),
+            scale: Vec3::default(),
+            rgb: Vec3::default(),
 
             window,
             model,
+            cached_center: Vec3::default(),
             cached_vertices: Vec::default(),
             cached_indices: Vec::default(),
         };
         object.recompute();
+        object.compute_center();
         object
     }
 
@@ -38,6 +57,19 @@ impl Object {
 
     pub fn translate(&mut self, new_pos: Vec3) {
         self.position = new_pos;
+    }
+
+    pub fn rotate(&mut self, rotation: Rotation) {
+        self.rotation.radians = self.rotation.radians.add(rotation.radians);
+        self.rotation.axis = self.rotation.axis.add(rotation.axis).normalize();
+    }
+
+    pub fn scale(&mut self, scale: Vec3) {
+        self.scale = scale;
+    }
+
+    pub fn center(&self) -> Vec3 {
+        self.cached_center.mul(self.scale) // scale by the object's scale
     }
 
     pub fn draw(&self) {
@@ -78,5 +110,13 @@ impl Object {
     pub fn recompute(&mut self) {
         self.cached_vertices = self.model.get_raw_vertices();
         self.cached_indices = self.model.get_raw_indices();
+    }
+
+    fn compute_center(&mut self) {
+        let mut center = Vec3::default();
+        for vertice in &self.model.vertices {
+            center = center.add(Vec3::new(vertice.x, vertice.y, vertice.z));
+        }
+        self.cached_center = center.scale(1.0 / self.model.vertices.len() as f32);
     }
 }
