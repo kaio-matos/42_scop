@@ -2,7 +2,7 @@ use super::{Vec3, Vec4, VectorFunctions};
 use std::ptr;
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Default, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Mat4 {
     pub c0: Vec4, // column 1
     pub c1: Vec4, // column 2
@@ -56,7 +56,7 @@ impl Mat4 {
     }
 
     pub fn perspective(fov: f32, aspect_ratio: f32, near: f32, far: f32) -> Self {
-        let mut p = Mat4::default(0.0);
+        let mut p = Mat4::splat(0.0);
 
         let tan_half_fovy = f32::tan(fov / 2.);
 
@@ -70,7 +70,7 @@ impl Mat4 {
         p
     }
 
-    pub fn default(n: f32) -> Self {
+    pub fn splat(n: f32) -> Self {
         Self {
             c0: Vec4::new(n, n, n, n),
             c1: Vec4::new(n, n, n, n),
@@ -82,7 +82,7 @@ impl Mat4 {
     pub fn look_at(position: Vec3, target: Vec3, up_dir: Vec3) -> Self {
         let mut look_at_mat = Mat4::identity();
 
-        let forward = position.subtract(target).normalize();
+        let forward = position.sub(target).normalize();
         let left = up_dir.cross(forward).normalize();
         let up = forward.cross(left);
 
@@ -106,7 +106,7 @@ impl Mat4 {
     }
 
     pub fn multiply(&mut self, mat: Mat4) -> &mut Self {
-        let mut new = Mat4::default(0.0);
+        let mut new = Mat4::splat(0.0);
 
         // First line
         new.c0.x = self.c0.x * mat.c0.x
@@ -184,7 +184,7 @@ impl Mat4 {
         self
     }
 
-    pub fn translate(&mut self, vec: Vec3) -> &Self {
+    pub fn translate(&mut self, vec: Vec3) -> &mut Self {
         let mut translation_mtx = Mat4::identity();
         translation_mtx.c3.x = vec.x;
         translation_mtx.c3.y = vec.y;
@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn it_should_be_able_to_instantiate_mat4() {
-        let result = Mat4::default(1.0);
+        let result = Mat4::splat(1.0);
 
         // line 1
         assert_eq!(result.c0.x, 1.0);
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn it_should_be_able_to_instantiate_mat4_with_new() {
-        let result = Mat4::new(Vec4::default(1.0));
+        let result = Mat4::new(Vec4::splat(1.0));
 
         // line 1
         assert_eq!(result.c0.x, 1.0);
@@ -377,7 +377,7 @@ mod tests {
 
     #[test]
     fn it_should_be_able_to_multiply_mtx4() {
-        let mut first = Mat4::default(0.0);
+        let mut first = Mat4::splat(0.0);
         first.c0.x = 1.0;
         first.c0.y = 0.0;
         first.c0.z = 2.0;
@@ -398,7 +398,7 @@ mod tests {
         first.c3.z = 3.0;
         first.c3.w = 15.0;
 
-        let mut second = Mat4::default(0.0);
+        let mut second = Mat4::splat(0.0);
         second.c0.x = 2.0;
         second.c0.y = 6.0;
         second.c0.z = 4.0;
@@ -454,7 +454,7 @@ mod tests {
             z: 3.0,
         };
 
-        let mut first = Mat4::default(0.0);
+        let mut first = Mat4::splat(0.0);
         first.c0.x = 1.0;
         first.c0.y = 0.0;
         first.c0.z = 1.0;
@@ -511,7 +511,7 @@ mod tests {
         };
         let radians = 90.0_f32.to_radians();
 
-        let mut first = Mat4::default(0.0);
+        let mut first = Mat4::splat(0.0);
         first.c0 = Vec4 {
             x: 0.0,
             y: 0.0,
@@ -572,7 +572,7 @@ mod tests {
             z: 2.0,
         };
 
-        let mut first = Mat4::default(0.0);
+        let mut first = Mat4::splat(0.0);
         first.c0.x = 1.0;
         first.c0.y = 2.0;
         first.c0.z = 0.0;

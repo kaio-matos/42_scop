@@ -8,7 +8,7 @@ use basis::{
 
 #[derive(Debug, Clone)]
 pub struct Camera {
-    position: Vec3,
+    pub position: Vec3,
     front: Vec3,
     up: Vec3,
     speed: f32,
@@ -51,11 +51,11 @@ impl Controllable for Camera {
     }
 
     fn move_backward(&mut self) {
-        self.position = self.position.subtract(self.front.scale(self.get_speed()));
+        self.position = self.position.sub(self.front.scale(self.get_speed()));
     }
 
     fn move_left(&mut self) {
-        self.position = self.position.subtract(
+        self.position = self.position.sub(
             self.front
                 .cross(self.up)
                 .normalize()
@@ -77,13 +77,13 @@ impl Controllable for Camera {
     }
 
     fn move_down(&mut self) {
-        self.position = self.position.subtract(self.up.scale(self.get_speed()));
+        self.position = self.position.sub(self.up.scale(self.get_speed()));
     }
 
     fn rotate(&mut self, yaw: f32, pitch: f32) {
         let yawr = yaw.to_radians();
         let pitchr = pitch.to_radians();
-        let mut direction = Vec3::default(0.);
+        let mut direction = Vec3::splat(0.);
         direction.x = yawr.cos() * pitchr.sin();
         direction.y = pitchr.sin();
         direction.z = yawr.sin() * pitchr.sin();

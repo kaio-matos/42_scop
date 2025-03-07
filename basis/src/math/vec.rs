@@ -1,8 +1,9 @@
 pub trait VectorFunctions {
     fn negate(&self) -> Self;
     fn normalize(&self) -> Self;
-    fn subtract(&self, v: Self) -> Self;
+    fn sub(&self, v: Self) -> Self;
     fn add(&self, v: Self) -> Self;
+    fn mul(&self, v: Self) -> Self;
     fn scale(&self, n: f32) -> Self;
 
     ///
@@ -28,7 +29,7 @@ pub trait VectorFunctions {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Vec4 {
     pub x: f32,
     pub y: f32,
@@ -40,7 +41,7 @@ impl Vec4 {
         Self { x, y, z, w }
     }
 
-    pub fn default(n: f32) -> Self {
+    pub fn splat(n: f32) -> Self {
         Self {
             x: n,
             y: n,
@@ -51,7 +52,7 @@ impl Vec4 {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Default, Debug, PartialEq, PartialOrd)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -62,7 +63,7 @@ impl Vec3 {
         Self { x, y, z }
     }
 
-    pub fn default(n: f32) -> Self {
+    pub fn splat(n: f32) -> Self {
         Self { x: n, y: n, z: n }
     }
 }
@@ -92,7 +93,7 @@ impl VectorFunctions for Vec4 {
         }
     }
 
-    fn subtract(&self, v: Vec4) -> Self {
+    fn sub(&self, v: Vec4) -> Self {
         Self {
             x: self.x - v.x,
             y: self.y - v.y,
@@ -107,6 +108,15 @@ impl VectorFunctions for Vec4 {
             y: self.y + v.y,
             z: self.z + v.z,
             w: self.w + v.w,
+        }
+    }
+
+    fn mul(&self, v: Vec4) -> Self {
+        Self {
+            x: self.x * v.x,
+            y: self.y * v.y,
+            z: self.z * v.z,
+            w: self.w * v.w,
         }
     }
 
@@ -143,16 +153,23 @@ impl VectorFunctions for Vec3 {
     }
 
     fn normalize(&self) -> Self {
-        let hipotenuse = f32::sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z));
+        if self.x == 0.0 && self.y == 0.0 && self.z == 0.0 {
+            return *self;
+        }
+        let hypotenuse = f32::sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z));
+
+        if hypotenuse == 0.0 {
+            return *self;
+        }
 
         Self {
-            x: self.x / hipotenuse,
-            y: self.y / hipotenuse,
-            z: self.z / hipotenuse,
+            x: self.x / hypotenuse,
+            y: self.y / hypotenuse,
+            z: self.z / hypotenuse,
         }
     }
 
-    fn subtract(&self, v: Vec3) -> Self {
+    fn sub(&self, v: Vec3) -> Self {
         Self {
             x: self.x - v.x,
             y: self.y - v.y,
@@ -165,6 +182,14 @@ impl VectorFunctions for Vec3 {
             x: self.x + v.x,
             y: self.y + v.y,
             z: self.z + v.z,
+        }
+    }
+
+    fn mul(&self, v: Vec3) -> Self {
+        Self {
+            x: self.x * v.x,
+            y: self.y * v.y,
+            z: self.z * v.z,
         }
     }
 
