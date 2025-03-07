@@ -194,13 +194,22 @@ impl Mat4 {
         self
     }
 
-    // Needs a refactor to use quartenions
+    ///
+    /// NOTE: Needs a refactor to use quartenions
+    ///
+    /// Rotates a point around a given axis.
+    ///
+    /// * `radians` - How much we need to rotate.
+    /// * `r` - Which axis to rotate around, needs to be normalized.
+    ///
     pub fn rotate(&mut self, radians: f32, r: Vec3) -> &Self {
+        assert!(r.x >= -1. && r.y >= -1. && r.z >= -1.);
+        assert!(r.x <= 1. && r.y <= 1. && r.z <= 1.);
         // let mut rotation_x = Mat4::identity();
         // let mut rotation_y = Mat4::identity();
         // let mut rotation_z = Mat4::identity();
         // let mut rotation_mtx = Mat4::new(Vec4::new(r.x, r.y, r.z, 1.0));
-        let mut rotation_mtx = Mat4::default(0.0);
+        let mut rotation_mtx = Mat4::splat(0.0);
 
         let cos = f32::cos(radians);
         let sin = f32::sin(radians);
@@ -257,8 +266,16 @@ impl Mat4 {
         self
     }
 
+    pub fn rotate_around_point(&mut self, center: Vec3, radians: Vec3, r: Vec3) -> &Self {
+        self.translate(center);
+        // self.rotate(radians.x, r);
+        // self.rotate(radians.y, r);
+        // self.rotate(radians.z, r);
+        self
+    }
+
     pub fn scale(&mut self, vec: Vec3) -> &Self {
-        let mut scale_mtx = Mat4::default(0.0);
+        let mut scale_mtx = Mat4::splat(0.0);
         scale_mtx.c0.x = vec.x;
         scale_mtx.c1.y = vec.y;
         scale_mtx.c2.z = vec.z;
@@ -274,13 +291,20 @@ impl Mat4 {
 }
 
 impl std::fmt::Display for Mat4 {
+    #[rustfmt::skip]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Mat4 {{\n")?;
-        write!(f, "  c0: {:?}\n", self.c0)?;
-        write!(f, "  c1: {:?}\n", self.c1)?;
-        write!(f, "  c2: {:?}\n", self.c2)?;
-        write!(f, "  c3: {:?}\n", self.c3)?;
+        write!(f, "     {: <3} {: <3} {: <3} {: <3}\n", self.c0.x, self.c1.x, self.c2.x, self.c3.x)?;
+        write!(f, "     {: <3} {: <3} {: <3} {: <3}\n", self.c0.y, self.c1.y, self.c2.y, self.c3.y)?;
+        write!(f, "     {: <3} {: <3} {: <3} {: <3}\n", self.c0.z, self.c1.z, self.c2.z, self.c3.z)?;
+        write!(f, "     {: <3} {: <3} {: <3} {: <3}\n", self.c0.w, self.c1.w, self.c2.w, self.c3.w)?;
         write!(f, "}}")
+        // write!(f, "Mat4 {{\n")?;
+        // write!(f, "  c0: {:?}\n", self.c0)?;
+        // write!(f, "  c1: {:?}\n", self.c1)?;
+        // write!(f, "  c2: {:?}\n", self.c2)?;
+        // write!(f, "  c3: {:?}\n", self.c3)?;
+        // write!(f, "}}")
     }
 }
 

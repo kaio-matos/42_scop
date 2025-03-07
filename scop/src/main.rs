@@ -11,10 +11,10 @@ use basis::{
         wavefront,
         window::Window,
     },
-    math,
+    math::{self, VectorFunctions},
 };
 
-use structs::Camera;
+use structs::{Camera, Rotation};
 use traits::Controllable;
 
 use std::cell::RefCell;
@@ -51,7 +51,19 @@ fn draw(window: &Window, obj: &structs::Object, camera: &Camera) {
     shader
         .get_uniform_location("color")
         .uniform3f(obj.rgb.x, obj.rgb.y, obj.rgb.z);
+    println!("-------------------------------------------------------------");
+    println!("start model_mat: {}", model_mat);
+    model_mat.scale(obj.scale);
+    model_mat.rotate_around_point(
+        obj.center().negate(),
+        obj.rotation.radians,
+        obj.rotation.axis,
+    );
+    println!("middle model_mat: {}", model_mat);
+    println!("obj.position: {:?}", obj.position);
     model_mat.translate(obj.position);
+    println!("final model_mat: {}", model_mat);
+    println!("-------------------------------------------------------------");
     shader
         .get_uniform_location("model")
         .uniform_matrix4fv(&model_mat);
@@ -79,7 +91,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let positions = [
         math::Vec3::new(0.0, 0.0, 0.0),
-        math::Vec3::new(2.0, 5.0, -15.0),
+        math::Vec3::new(0.0, 0.0, 0.0),
         math::Vec3::new(-1.5, -2.2, -2.5),
         math::Vec3::new(-3.8, -2.0, -12.3),
         math::Vec3::new(2.4, -0.4, -3.5),
@@ -90,7 +102,67 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         math::Vec3::new(-1.3, 1.0, -1.5),
     ];
 
-    for i in 0..positions.len() {
+    let scales = [
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(0.5, 0.5, 0.5),
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(1.0, 1.0, 1.0),
+        math::Vec3::new(1.0, 1.0, 1.0),
+    ];
+
+    let mut rotations = [
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(0.0, 0.0, 0.0),
+        ),
+        Rotation::new(
+            math::Vec3::new(0.0, 0.0, 0.0),
+            math::Vec3::new(0.0, 0.0, 0.0),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(1.5, 2.2, 2.5),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(3.8, 2.0, 12.3),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(2.4, 0.4, 3.5),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(1.7, 3.0, 7.5),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(1.3, 2.0, 2.5),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(1.5, 2.0, 2.5),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(1.5, 0.2, 1.5),
+        ),
+        Rotation::new(
+            math::Vec3::new(f32::to_radians(50.), 0.0, 0.0),
+            math::Vec3::new(1.3, 1.0, 1.5),
+        ),
+    ];
+    rotations
+        .iter_mut()
+        .for_each(|r| r.axis = r.axis.normalize());
+
+    for i in 0..1 {
+        // for i in 0..positions.len() {
         let mut new = obj.clone();
         let mut rgb = math::Vec3::new(0.5, 0.5, 0.5);
         if i == 0 {
@@ -99,6 +171,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         new.color(rgb);
         new.translate(*positions.get(i).unwrap());
+        new.rotate(*rotations.get(i).unwrap());
+        new.scale(*scales.get(i).unwrap());
         objs.push(new);
     }
 
@@ -172,6 +246,44 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .on_key_hold(graphics::glfw::Key::S, graphics::glfw::Modifiers::Control)
         {
             camera.move_backward()
+        }
+
+        if window
+            .borrow_mut()
+            .on_key_hold(graphics::glfw::Key::Up, graphics::glfw::Modifiers::empty())
+        {
+            objs[0].rotate(Rotation::new(
+                math::Vec3::new(0.1, 0.0, 0.0),
+                math::Vec3::new(1.0, 0.0, 0.0),
+            ));
+        }
+
+        if window.borrow_mut().on_key_hold(
+            graphics::glfw::Key::Down,
+            graphics::glfw::Modifiers::empty(),
+        ) {
+            objs[0].rotate(Rotation::new(
+                math::Vec3::new(0.1, 0.0, 0.0),
+                math::Vec3::new(-1.0, 0.0, 0.0),
+            ));
+        }
+        if window.borrow_mut().on_key_hold(
+            graphics::glfw::Key::Left,
+            graphics::glfw::Modifiers::empty(),
+        ) {
+            objs[0].rotate(Rotation::new(
+                math::Vec3::new(0.0, 0.1, 0.0),
+                math::Vec3::new(0.0, -1.0, 0.0),
+            ));
+        }
+        if window.borrow_mut().on_key_hold(
+            graphics::glfw::Key::Right,
+            graphics::glfw::Modifiers::empty(),
+        ) {
+            objs[0].rotate(Rotation::new(
+                math::Vec3::new(0.0, 0.1, 0.0),
+                math::Vec3::new(0.0, 1.0, 0.0),
+            ));
         }
 
         for obj in objs.iter() {
