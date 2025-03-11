@@ -59,7 +59,7 @@ pub fn draw_triangles_with_transforms(window: &Window) {
     let mut rotation_mat = math::Mat4::new(math::Vec4::splat(1.0));
     let angle = window.glfw.get_time() as f32;
     rotation_mat.scale(math::Vec3::new(0.5, 0.5, 0.5));
-    rotation_mat.rotate(angle, math::Vec3::new(0.0, 0.0, 1.0));
+    rotation_mat.rotate_euler(angle, math::Vec3::new(0.0, 0.0, 1.0));
 
     shader_1.bind();
     let transform = shader_1.get_uniform_location("transform");

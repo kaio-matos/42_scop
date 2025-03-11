@@ -2,25 +2,13 @@ use std::{cell::RefCell, mem, ptr, rc::Rc};
 
 use basis::{
     graphics::{glw, wavefront, window::Window},
-    math::{Vec3, VectorFunctions},
+    math::{Quaternion, Vec3, VectorFunctions},
 };
-
-#[derive(Debug, Clone, Default, Copy)]
-pub struct Rotation {
-    pub radians: Vec3,
-    pub axis: Vec3,
-}
-
-impl Rotation {
-    pub fn new(radians: Vec3, axis: Vec3) -> Self {
-        Rotation { radians, axis }
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct Object {
     pub position: Vec3,
-    pub rotation: Rotation,
+    pub rotation: Quaternion,
     pub scale: Vec3,
     pub rgb: Vec3, // TODO: Implement proper material support
 
@@ -36,7 +24,7 @@ impl Object {
     pub fn new(window: Rc<RefCell<Window>>, model: wavefront::obj::OBJ) -> Object {
         let mut object = Object {
             position: Vec3::default(),
-            rotation: Rotation::default(),
+            rotation: Quaternion::default(),
             scale: Vec3::default(),
             rgb: Vec3::default(),
 
@@ -57,11 +45,6 @@ impl Object {
 
     pub fn translate(&mut self, new_pos: Vec3) {
         self.position = new_pos;
-    }
-
-    pub fn rotate(&mut self, rotation: Rotation) {
-        self.rotation.radians = self.rotation.radians.add(rotation.radians);
-        self.rotation.axis = self.rotation.axis.add(rotation.axis).normalize();
     }
 
     pub fn scale(&mut self, scale: Vec3) {

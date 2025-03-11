@@ -1,4 +1,4 @@
-use super::{Vec3, Vec4, VectorFunctions};
+use super::{Quaternion, Vec3, Vec4, VectorFunctions};
 use std::ptr;
 
 #[repr(C)]
@@ -190,17 +190,27 @@ impl Mat4 {
         translation_mtx.c3.y = vec.y;
         translation_mtx.c3.z = vec.z;
 
-        *self = *translation_mtx.multiply(*self);
+        self.multiply(translation_mtx);
+        // *self = *translation_mtx.multiply(*self);
         self
     }
 
-    // Needs a refactor to use quartenions
-    pub fn rotate(&mut self, radians: f32, r: Vec3) -> &Self {
+    ///
+    ///
+    /// Rotates a point around a given axis.
+    /// It actually just changes de orientation by rotating it, quaternions are the real rotations
+    ///
+    /// * `radians` - How much we need to rotate.
+    /// * `r` - Which axis to rotate around, needs to be normalized.
+    ///
+    pub fn rotate_euler(&mut self, radians: f32, r: Vec3) -> &Self {
+        assert!(r.x >= -1. && r.y >= -1. && r.z >= -1.);
+        assert!(r.x <= 1. && r.y <= 1. && r.z <= 1.);
         // let mut rotation_x = Mat4::identity();
         // let mut rotation_y = Mat4::identity();
         // let mut rotation_z = Mat4::identity();
         // let mut rotation_mtx = Mat4::new(Vec4::new(r.x, r.y, r.z, 1.0));
-        let mut rotation_mtx = Mat4::default(0.0);
+        let mut rotation_mtx = Mat4::splat(0.0);
 
         let cos = f32::cos(radians);
         let sin = f32::sin(radians);
@@ -257,8 +267,67 @@ impl Mat4 {
         self
     }
 
+    ///
+    /// Rotates a point around a given axis.
+    ///
+    /// * `quaternion` - The quaternion is assumed to be normalized
+    ///
+    pub fn rotate(&mut self, quaternion: Quaternion) -> &Self {
+        let mut mtx = Mat4::default();
+
+        debug_assert!(quaternion.w >= -1. && quaternion.w <= 1.);
+        debug_assert!(quaternion.x >= -1. && quaternion.x <= 1.);
+        debug_assert!(quaternion.y >= -1. && quaternion.y <= 1.);
+        debug_assert!(quaternion.z >= -1. && quaternion.z <= 1.);
+
+        let x_squared = f32::powf(quaternion.x, 2.);
+        let y_squared = f32::powf(quaternion.y, 2.);
+        let z_squared = f32::powf(quaternion.z, 2.);
+        let w_squared = f32::powf(quaternion.w, 2.);
+
+        mtx.c0.x = w_squared + x_squared - y_squared - z_squared;
+        mtx.c0.y = 2. * quaternion.x * quaternion.y + 2. * quaternion.w * quaternion.z;
+        mtx.c0.z = 2. * quaternion.x * quaternion.z - 2. * quaternion.w * quaternion.y;
+        mtx.c0.w = 0.;
+
+        mtx.c1.x = 2. * quaternion.x * quaternion.y - 2. * quaternion.w * quaternion.z;
+        mtx.c1.y = w_squared - x_squared + y_squared - z_squared;
+        mtx.c1.z = 2. * quaternion.y * quaternion.z + 2. * quaternion.w * quaternion.x;
+        mtx.c1.w = 0.;
+
+        mtx.c2.x = 2. * quaternion.x * quaternion.z + 2. * quaternion.w * quaternion.y;
+        mtx.c2.y = 2. * quaternion.y * quaternion.z - 2. * quaternion.w * quaternion.x;
+        mtx.c2.z = w_squared - x_squared - y_squared + z_squared;
+        mtx.c2.w = 0.;
+
+        mtx.c3.w = 1.;
+
+        // mtx.c0.x = 1. - 2. * y_squared - 2. * z_squared;
+        // mtx.c0.y = 2. * quaternion.x * quaternion.y + 2. * quaternion.w * quaternion.z;
+        // mtx.c0.z = 2. * quaternion.x * quaternion.z - 2. * quaternion.w * quaternion.y;
+        //
+        // mtx.c1.x = 2. * quaternion.x * quaternion.y - 2. * quaternion.w * quaternion.z;
+        // mtx.c1.y = 1. - 2. * x_squared - 2. * z_squared;
+        // mtx.c1.z = 2. * quaternion.y * quaternion.z - 2. * quaternion.w * quaternion.x;
+        //
+        // mtx.c2.x = 2. * quaternion.x * quaternion.z + 2. * quaternion.w * quaternion.y;
+        // mtx.c2.y = 2. * quaternion.y * quaternion.z + 2. * quaternion.w * quaternion.x;
+        // mtx.c2.z = 1. - 2. * x_squared - 2. * y_squared;
+        //
+        // mtx.c3.w = 1.;
+
+        *self = *mtx.multiply(*self);
+        self
+    }
+
+    pub fn rotate_around_center(&mut self, center: Vec3, quaternion: Quaternion) -> &Self {
+        self.translate(center);
+        self.rotate(quaternion);
+        self
+    }
+
     pub fn scale(&mut self, vec: Vec3) -> &Self {
-        let mut scale_mtx = Mat4::default(0.0);
+        let mut scale_mtx = Mat4::splat(0.0);
         scale_mtx.c0.x = vec.x;
         scale_mtx.c1.y = vec.y;
         scale_mtx.c2.z = vec.z;
@@ -274,13 +343,20 @@ impl Mat4 {
 }
 
 impl std::fmt::Display for Mat4 {
+    #[rustfmt::skip]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Mat4 {{\n")?;
-        write!(f, "  c0: {:?}\n", self.c0)?;
-        write!(f, "  c1: {:?}\n", self.c1)?;
-        write!(f, "  c2: {:?}\n", self.c2)?;
-        write!(f, "  c3: {:?}\n", self.c3)?;
+        write!(f, "     {: <10} {: <10} {: <10} {: <10}\n", self.c0.x, self.c1.x, self.c2.x, self.c3.x)?;
+        write!(f, "     {: <10} {: <10} {: <10} {: <10}\n", self.c0.y, self.c1.y, self.c2.y, self.c3.y)?;
+        write!(f, "     {: <10} {: <10} {: <10} {: <10}\n", self.c0.z, self.c1.z, self.c2.z, self.c3.z)?;
+        write!(f, "     {: <10} {: <10} {: <10} {: <10}\n", self.c0.w, self.c1.w, self.c2.w, self.c3.w)?;
         write!(f, "}}")
+        // write!(f, "Mat4 {{\n")?;
+        // write!(f, "  c0: {:?}\n", self.c0)?;
+        // write!(f, "  c1: {:?}\n", self.c1)?;
+        // write!(f, "  c2: {:?}\n", self.c2)?;
+        // write!(f, "  c3: {:?}\n", self.c3)?;
+        // write!(f, "}}")
     }
 }
 
@@ -503,7 +579,7 @@ mod tests {
     }
 
     #[test]
-    fn it_should_be_able_to_rotate_around_z_axis_mtx4() {
+    fn it_should_be_able_to_rotate_euler_around_z_axis_mtx4() {
         let rotation_vector = Vec3 {
             x: 0.0,
             y: 0.0,
@@ -537,7 +613,7 @@ mod tests {
             w: 0.0,
         };
 
-        first.rotate(radians, rotation_vector);
+        first.rotate_euler(radians, rotation_vector);
 
         // line 1
         assert_eq!(first.c0.x, 0.0);

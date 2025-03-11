@@ -11,7 +11,7 @@ use basis::{
         wavefront,
         window::Window,
     },
-    math,
+    math::{self, VectorFunctions},
 };
 
 use structs::Camera;
@@ -51,7 +51,11 @@ fn draw(window: &Window, obj: &structs::Object, camera: &Camera) {
     shader
         .get_uniform_location("color")
         .uniform3f(obj.rgb.x, obj.rgb.y, obj.rgb.z);
+
+    model_mat.scale(obj.scale);
+    model_mat.rotate_around_center(obj.center().negate(), obj.rotation);
     model_mat.translate(obj.position);
+
     shader
         .get_uniform_location("model")
         .uniform_matrix4fv(&model_mat);
@@ -77,37 +81,108 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     let mut objs = Vec::new();
 
-    let positions = [
-        math::Vec3::new(0.0, 0.0, 0.0),
-        math::Vec3::new(2.0, 5.0, -15.0),
-        math::Vec3::new(-1.5, -2.2, -2.5),
-        math::Vec3::new(-3.8, -2.0, -12.3),
-        math::Vec3::new(2.4, -0.4, -3.5),
-        math::Vec3::new(-1.7, 3.0, -7.5),
-        math::Vec3::new(1.3, -2.0, -2.5),
-        math::Vec3::new(1.5, 2.0, -2.5),
-        math::Vec3::new(1.5, 0.2, -1.5),
-        math::Vec3::new(-1.3, 1.0, -1.5),
+    let objs_transformation = [
+        (
+            math::Vec3::new(0.0, 0.0, 0.0),            // Position
+            math::Vec3::new(1.0, 1.0, 1.0),            // Scale
+            math::Quaternion::new(0.0, 0.0, 0.0, 1.0), // Rotation (identity quaternion)
+            math::Vec3::new(1.0, 0.0, 0.0),            // Color (Red)
+        ),
+        (
+            math::Vec3::new(5.0, -2.0, 3.0),           // Position
+            math::Vec3::new(2.0, 0.5, 1.5),            // Scale
+            math::Quaternion::new(0.1, 0.2, 0.3, 0.9), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.0, 1.0, 0.0),            // Color (Green)
+        ),
+        (
+            math::Vec3::new(-4.0, 7.0, 1.0),           // Position
+            math::Vec3::new(0.8, 1.0, 1.2),            // Scale
+            math::Quaternion::new(0.0, 0.0, 0.0, 1.0), // Rotation (identity quaternion)
+            math::Vec3::new(0.0, 0.0, 1.0),            // Color (Blue)
+        ),
+        (
+            math::Vec3::new(1.0, 1.0, 1.0),              // Position
+            math::Vec3::new(1.0, 1.0, 1.0),              // Scale
+            math::Quaternion::new(0.0, 0.1, 0.0, 0.995), // Rotation (arbitrary quaternion)
+            math::Vec3::new(1.0, 1.0, 0.0),              // Color (Yellow)
+        ),
+        (
+            math::Vec3::new(-3.0, -2.0, 5.0),          // Position
+            math::Vec3::new(1.2, 0.8, 1.0),            // Scale
+            math::Quaternion::new(0.3, 0.4, 0.5, 0.7), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.5, 0.5, 0.5),            // Color (Gray)
+        ),
+        (
+            math::Vec3::new(10.0, 0.0, -3.0),          // Position
+            math::Vec3::new(0.5, 0.5, 0.5),            // Scale
+            math::Quaternion::new(0.6, 0.0, 0.8, 0.2), // Rotation (arbitrary quaternion)
+            math::Vec3::new(1.0, 0.5, 0.5),            // Color (Light Red)
+        ),
+        (
+            math::Vec3::new(2.0, -4.0, 6.0),           // Position
+            math::Vec3::new(1.0, 1.0, 2.0),            // Scale
+            math::Quaternion::new(0.4, 0.1, 0.6, 0.7), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.5, 0.0, 0.5),            // Color (Purple)
+        ),
+        (
+            math::Vec3::new(0.0, 0.0, -10.0),          // Position
+            math::Vec3::new(3.0, 3.0, 3.0),            // Scale
+            math::Quaternion::new(0.0, 0.0, 0.0, 1.0), // Rotation (identity quaternion)
+            math::Vec3::new(0.5, 0.5, 0.0),            // Color (Olive)
+        ),
+        (
+            math::Vec3::new(-8.0, 5.0, 0.0),           // Position
+            math::Vec3::new(1.1, 0.9, 0.8),            // Scale
+            math::Quaternion::new(0.1, 0.3, 0.5, 0.8), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.0, 1.0, 1.0),            // Color (Cyan)
+        ),
+        (
+            math::Vec3::new(4.0, -3.0, 2.0),           // Position
+            math::Vec3::new(2.0, 2.0, 0.5),            // Scale
+            math::Quaternion::new(0.0, 0.0, 0.1, 0.9), // Rotation (arbitrary quaternion)
+            math::Vec3::new(1.0, 0.0, 1.0),            // Color (Magenta)
+        ),
+        (
+            math::Vec3::new(-6.0, 2.0, 4.0),           // Position
+            math::Vec3::new(0.7, 0.7, 0.7),            // Scale
+            math::Quaternion::new(0.5, 0.5, 0.5, 0.5), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.2, 0.6, 0.2),            // Color (Dark Green)
+        ),
+        (
+            math::Vec3::new(8.0, -1.0, -6.0),          // Position
+            math::Vec3::new(1.3, 1.3, 1.3),            // Scale
+            math::Quaternion::new(0.4, 0.5, 0.6, 0.7), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.9, 0.6, 0.3),            // Color (Orange)
+        ),
+        (
+            math::Vec3::new(-9.0, -4.0, 3.0),          // Position
+            math::Vec3::new(1.0, 2.0, 1.0),            // Scale
+            math::Quaternion::new(0.3, 0.3, 0.7, 0.8), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.3, 0.3, 0.3),            // Color (Dark Gray)
+        ),
+        (
+            math::Vec3::new(3.0, 2.0, 7.0),            // Position
+            math::Vec3::new(1.5, 1.5, 1.5),            // Scale
+            math::Quaternion::new(0.2, 0.4, 0.6, 0.8), // Rotation (arbitrary quaternion)
+            math::Vec3::new(0.7, 0.7, 0.0),            // Color (Olive Green)
+        ),
     ];
 
-    for i in 0..positions.len() {
+    for (position, scale, rotation, rgb) in &objs_transformation {
         let mut new = obj.clone();
-        let mut rgb = math::Vec3::new(0.5, 0.5, 0.5);
-        if i == 0 {
-            rgb.x = 1.0;
-            rgb.y = 1.0;
-        }
-        new.color(rgb);
-        new.translate(*positions.get(i).unwrap());
+        new.scale(*scale);
+        new.color(*rgb);
+        new.translate(*position);
+        new.rotation = *rotation;
         objs.push(new);
     }
 
     let mut is_wireframe = false;
     let mut camera = Camera::new(
-        math::Vec3::new(0.0, 0.0, 3.0),
+        math::Vec3::new(0.0, 0.0, 50.0),
         math::Vec3::new(0.0, 0.0, -1.0),
         math::Vec3::new(0.0, 1.0, 0.0),
-        2.5,
+        30.,
         window.clone(),
     );
 
@@ -174,7 +249,42 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             camera.move_backward()
         }
 
-        for obj in objs.iter() {
+        if window
+            .borrow_mut()
+            .on_key_hold(graphics::glfw::Key::Up, graphics::glfw::Modifiers::empty())
+        {
+            objs[0]
+                .rotation
+                .rotate_mut(math::Vec3::new(0.1, 0.0, 0.0), 50_f32.to_radians());
+        }
+
+        if window.borrow_mut().on_key_hold(
+            graphics::glfw::Key::Down,
+            graphics::glfw::Modifiers::empty(),
+        ) {
+            objs[0]
+                .rotation
+                .rotate_mut(math::Vec3::new(-0.1, 0.0, 0.0), 50_f32.to_radians());
+        }
+        if window.borrow_mut().on_key_hold(
+            graphics::glfw::Key::Left,
+            graphics::glfw::Modifiers::empty(),
+        ) {
+            objs[0]
+                .rotation
+                .rotate_mut(math::Vec3::new(0.0, -0.1, 0.0), 50_f32.to_radians());
+        }
+        if window.borrow_mut().on_key_hold(
+            graphics::glfw::Key::Right,
+            graphics::glfw::Modifiers::empty(),
+        ) {
+            objs[0]
+                .rotation
+                .rotate_mut(math::Vec3::new(0.0, 0.1, 0.0), 50_f32.to_radians());
+        }
+
+        for obj in objs.iter_mut() {
+            obj.rotation = obj.rotation.normalize();
             draw(&window.borrow_mut(), &obj, &camera);
         }
 

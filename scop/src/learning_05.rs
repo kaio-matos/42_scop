@@ -83,7 +83,7 @@ pub fn draw_triangles_with_orthographic(window: &Window) {
     let mut rotation_mat = math::Mat4::new(math::Vec4::splat(1.0));
     let angle = window.glfw.get_time() as f32;
     rotation_mat.scale(math::Vec3::new(0.5, 0.5, 0.5));
-    rotation_mat.rotate(angle, math::Vec3::new(0.0, 0.0, 1.0));
+    rotation_mat.rotate_euler(angle, math::Vec3::new(0.0, 0.0, 1.0));
     rotation_mat.translate(math::Vec3::new(400., 400., 1.));
 
     shader_1.bind();
@@ -119,7 +119,7 @@ pub fn draw_triangles_with_perspective(window: &Window) {
         .unwrap();
 
     let mut model_mat = math::Mat4::identity();
-    model_mat.rotate(-55.0_f32.to_radians(), math::Vec3::new(1.0, 0.0, 0.0));
+    model_mat.rotate_euler(-55.0_f32.to_radians(), math::Vec3::new(1.0, 0.0, 0.0));
 
     let mut view_mat = math::Mat4::identity();
     view_mat.translate(math::Vec3::new(0.0, 0.0, -3.0));
