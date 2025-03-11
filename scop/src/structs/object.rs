@@ -52,7 +52,7 @@ impl Object {
     }
 
     pub fn center(&self) -> Vec3 {
-        self.cached_center.mul(self.scale) // scale by the object's scale
+        self.cached_center * self.scale // scale by the object's scale
     }
 
     pub fn draw(&self) {
@@ -98,7 +98,7 @@ impl Object {
     fn compute_center(&mut self) {
         let mut center = Vec3::default();
         for vertice in &self.model.vertices {
-            center = center.add(Vec3::new(vertice.x, vertice.y, vertice.z));
+            center = center + Vec3::new(vertice.x, vertice.y, vertice.z);
         }
         self.cached_center = center.scale(1.0 / self.model.vertices.len() as f32);
     }

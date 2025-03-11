@@ -1,3 +1,5 @@
+use std::ops;
+
 use super::Vec3;
 
 #[repr(C)]
@@ -20,6 +22,25 @@ impl Default for Quaternion {
     }
 }
 
+impl ops::Mul<Quaternion> for Quaternion {
+    type Output = Quaternion;
+
+    ///
+    /// Multiplies bu another quartenion.
+    ///
+    /// Note that quartenions are no commutative, so make sure the order of the multiplications are
+    /// correct
+    ///
+    fn mul(self, rhs: Self) -> Self {
+        Self {
+            w: self.w * rhs.w - self.x * rhs.x - self.y * rhs.y - self.z * rhs.z,
+            x: self.w * rhs.x + self.x * rhs.w + self.y * rhs.z - self.z * rhs.y,
+            y: self.w * rhs.y - self.x * rhs.z + self.y * rhs.w + self.z * rhs.x,
+            z: self.w * rhs.z + self.x * rhs.y - self.y * rhs.x + self.z * rhs.w,
+        }
+    }
+}
+
 impl Quaternion {
     pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
         Self { x, y, z, w }
@@ -36,21 +57,6 @@ impl Quaternion {
         }
     }
 
-    ///
-    /// Multiplies bu another quartenion.
-    ///
-    /// Note that quartenions are no commutative, so make sure the order of the multiplications are
-    /// correct
-    ///
-    pub fn mul(&self, q: Self) -> Self {
-        Self {
-            w: self.w * q.w - self.x * q.x - self.y * q.y - self.z * q.z,
-            x: self.w * q.x + self.x * q.w + self.y * q.z - self.z * q.y,
-            y: self.w * q.y - self.x * q.z + self.y * q.w + self.z * q.x,
-            z: self.w * q.z + self.x * q.y - self.y * q.x + self.z * q.w,
-        }
-    }
-
     pub fn rotate(&self, axis: Vec3, radians: f32) -> Self {
         let mut temporary = Self::default();
         temporary.w = f32::cos(radians / 2.);
@@ -58,7 +64,7 @@ impl Quaternion {
         temporary.y = axis.y * f32::sin(radians / 2.);
         temporary.z = axis.z * f32::sin(radians / 2.);
 
-        temporary.mul(*self)
+        temporary * *self
     }
 
     pub fn rotate_mut(&mut self, axis: Vec3, radians: f32) -> &mut Self {

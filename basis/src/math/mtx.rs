@@ -1,5 +1,5 @@
 use super::{Quaternion, Vec3, Vec4, VectorFunctions};
-use std::ptr;
+use std::{ops, ptr};
 
 #[repr(C)]
 #[derive(Clone, Default, Copy, Debug, PartialEq, PartialOrd)]
@@ -8,6 +8,88 @@ pub struct Mat4 {
     pub c1: Vec4, // column 2
     pub c2: Vec4, // column 3
     pub c3: Vec4, // column 4
+}
+
+impl ops::Mul<Mat4> for Mat4 {
+    type Output = Mat4;
+
+    fn mul(self, rhs: Mat4) -> Self {
+        let mut new = Mat4::splat(0.0);
+
+        // First line
+        new.c0.x = self.c0.x * rhs.c0.x
+            + self.c1.x * rhs.c0.y
+            + self.c2.x * rhs.c0.z
+            + self.c3.x * rhs.c0.w;
+        new.c1.x = self.c0.x * rhs.c1.x
+            + self.c1.x * rhs.c1.y
+            + self.c2.x * rhs.c1.z
+            + self.c3.x * rhs.c1.w;
+        new.c2.x = self.c0.x * rhs.c2.x
+            + self.c1.x * rhs.c2.y
+            + self.c2.x * rhs.c2.z
+            + self.c3.x * rhs.c2.w;
+        new.c3.x = self.c0.x * rhs.c3.x
+            + self.c1.x * rhs.c3.y
+            + self.c2.x * rhs.c3.z
+            + self.c3.x * rhs.c3.w;
+
+        // Second line
+        new.c0.y = self.c0.y * rhs.c0.x
+            + self.c1.y * rhs.c0.y
+            + self.c2.y * rhs.c0.z
+            + self.c3.y * rhs.c0.w;
+        new.c1.y = self.c0.y * rhs.c1.x
+            + self.c1.y * rhs.c1.y
+            + self.c2.y * rhs.c1.z
+            + self.c3.y * rhs.c1.w;
+        new.c2.y = self.c0.y * rhs.c2.x
+            + self.c1.y * rhs.c2.y
+            + self.c2.y * rhs.c2.z
+            + self.c3.y * rhs.c2.w;
+        new.c3.y = self.c0.y * rhs.c3.x
+            + self.c1.y * rhs.c3.y
+            + self.c2.y * rhs.c3.z
+            + self.c3.y * rhs.c3.w;
+
+        // Third line
+        new.c0.z = self.c0.z * rhs.c0.x
+            + self.c1.z * rhs.c0.y
+            + self.c2.z * rhs.c0.z
+            + self.c3.z * rhs.c0.w;
+        new.c1.z = self.c0.z * rhs.c1.x
+            + self.c1.z * rhs.c1.y
+            + self.c2.z * rhs.c1.z
+            + self.c3.z * rhs.c1.w;
+        new.c2.z = self.c0.z * rhs.c2.x
+            + self.c1.z * rhs.c2.y
+            + self.c2.z * rhs.c2.z
+            + self.c3.z * rhs.c2.w;
+        new.c3.z = self.c0.z * rhs.c3.x
+            + self.c1.z * rhs.c3.y
+            + self.c2.z * rhs.c3.z
+            + self.c3.z * rhs.c3.w;
+
+        // Fourth line
+        new.c0.w = self.c0.w * rhs.c0.x
+            + self.c1.w * rhs.c0.y
+            + self.c2.w * rhs.c0.z
+            + self.c3.w * rhs.c0.w;
+        new.c1.w = self.c0.w * rhs.c1.x
+            + self.c1.w * rhs.c1.y
+            + self.c2.w * rhs.c1.z
+            + self.c3.w * rhs.c1.w;
+        new.c2.w = self.c0.w * rhs.c2.x
+            + self.c1.w * rhs.c2.y
+            + self.c2.w * rhs.c2.z
+            + self.c3.w * rhs.c2.w;
+        new.c3.w = self.c0.w * rhs.c3.x
+            + self.c1.w * rhs.c3.y
+            + self.c2.w * rhs.c3.z
+            + self.c3.w * rhs.c3.w;
+
+        new
+    }
 }
 
 impl Mat4 {
@@ -47,12 +129,9 @@ impl Mat4 {
         let mut convert_to_left_handed = Mat4::identity();
         convert_to_left_handed.c3.z = -1.;
 
-        let mut result = Mat4::identity();
+        let result = Mat4::identity();
 
-        *result
-            .multiply(convert_to_left_handed)
-            .multiply(scale_viewing_volume)
-            .multiply(center_about_origin)
+        result * convert_to_left_handed * scale_viewing_volume * center_about_origin
     }
 
     pub fn perspective(fov: f32, aspect_ratio: f32, near: f32, far: f32) -> Self {
@@ -82,7 +161,7 @@ impl Mat4 {
     pub fn look_at(position: Vec3, target: Vec3, up_dir: Vec3) -> Self {
         let mut look_at_mat = Mat4::identity();
 
-        let forward = position.sub(target).normalize();
+        let forward = (position - target).normalize();
         let left = up_dir.cross(forward).normalize();
         let up = forward.cross(left);
 
@@ -105,93 +184,13 @@ impl Mat4 {
         look_at_mat
     }
 
-    pub fn multiply(&mut self, mat: Mat4) -> &mut Self {
-        let mut new = Mat4::splat(0.0);
-
-        // First line
-        new.c0.x = self.c0.x * mat.c0.x
-            + self.c1.x * mat.c0.y
-            + self.c2.x * mat.c0.z
-            + self.c3.x * mat.c0.w;
-        new.c1.x = self.c0.x * mat.c1.x
-            + self.c1.x * mat.c1.y
-            + self.c2.x * mat.c1.z
-            + self.c3.x * mat.c1.w;
-        new.c2.x = self.c0.x * mat.c2.x
-            + self.c1.x * mat.c2.y
-            + self.c2.x * mat.c2.z
-            + self.c3.x * mat.c2.w;
-        new.c3.x = self.c0.x * mat.c3.x
-            + self.c1.x * mat.c3.y
-            + self.c2.x * mat.c3.z
-            + self.c3.x * mat.c3.w;
-
-        // Second line
-        new.c0.y = self.c0.y * mat.c0.x
-            + self.c1.y * mat.c0.y
-            + self.c2.y * mat.c0.z
-            + self.c3.y * mat.c0.w;
-        new.c1.y = self.c0.y * mat.c1.x
-            + self.c1.y * mat.c1.y
-            + self.c2.y * mat.c1.z
-            + self.c3.y * mat.c1.w;
-        new.c2.y = self.c0.y * mat.c2.x
-            + self.c1.y * mat.c2.y
-            + self.c2.y * mat.c2.z
-            + self.c3.y * mat.c2.w;
-        new.c3.y = self.c0.y * mat.c3.x
-            + self.c1.y * mat.c3.y
-            + self.c2.y * mat.c3.z
-            + self.c3.y * mat.c3.w;
-
-        // Third line
-        new.c0.z = self.c0.z * mat.c0.x
-            + self.c1.z * mat.c0.y
-            + self.c2.z * mat.c0.z
-            + self.c3.z * mat.c0.w;
-        new.c1.z = self.c0.z * mat.c1.x
-            + self.c1.z * mat.c1.y
-            + self.c2.z * mat.c1.z
-            + self.c3.z * mat.c1.w;
-        new.c2.z = self.c0.z * mat.c2.x
-            + self.c1.z * mat.c2.y
-            + self.c2.z * mat.c2.z
-            + self.c3.z * mat.c2.w;
-        new.c3.z = self.c0.z * mat.c3.x
-            + self.c1.z * mat.c3.y
-            + self.c2.z * mat.c3.z
-            + self.c3.z * mat.c3.w;
-
-        // Fourth line
-        new.c0.w = self.c0.w * mat.c0.x
-            + self.c1.w * mat.c0.y
-            + self.c2.w * mat.c0.z
-            + self.c3.w * mat.c0.w;
-        new.c1.w = self.c0.w * mat.c1.x
-            + self.c1.w * mat.c1.y
-            + self.c2.w * mat.c1.z
-            + self.c3.w * mat.c1.w;
-        new.c2.w = self.c0.w * mat.c2.x
-            + self.c1.w * mat.c2.y
-            + self.c2.w * mat.c2.z
-            + self.c3.w * mat.c2.w;
-        new.c3.w = self.c0.w * mat.c3.x
-            + self.c1.w * mat.c3.y
-            + self.c2.w * mat.c3.z
-            + self.c3.w * mat.c3.w;
-
-        *self = new;
-        self
-    }
-
     pub fn translate(&mut self, vec: Vec3) -> &mut Self {
         let mut translation_mtx = Mat4::identity();
         translation_mtx.c3.x = vec.x;
         translation_mtx.c3.y = vec.y;
         translation_mtx.c3.z = vec.z;
 
-        self.multiply(translation_mtx);
-        // *self = *translation_mtx.multiply(*self);
+        *self = translation_mtx * *self;
         self
     }
 
@@ -206,10 +205,6 @@ impl Mat4 {
     pub fn rotate_euler(&mut self, radians: f32, r: Vec3) -> &Self {
         assert!(r.x >= -1. && r.y >= -1. && r.z >= -1.);
         assert!(r.x <= 1. && r.y <= 1. && r.z <= 1.);
-        // let mut rotation_x = Mat4::identity();
-        // let mut rotation_y = Mat4::identity();
-        // let mut rotation_z = Mat4::identity();
-        // let mut rotation_mtx = Mat4::new(Vec4::new(r.x, r.y, r.z, 1.0));
         let mut rotation_mtx = Mat4::splat(0.0);
 
         let cos = f32::cos(radians);
@@ -238,32 +233,7 @@ impl Mat4 {
         rotation_mtx.c3.z = 0.;
         rotation_mtx.c3.w = 1.;
 
-        // rotation_x.c0.x = 1.;
-        // rotation_x.c1.y = cos;
-        // rotation_x.c1.z = sin;
-        // rotation_x.c2.y = -sin;
-        // rotation_x.c2.z = cos;
-        // rotation_x.c3.w = 1.;
-        //
-        // rotation_y.c0.x = cos;
-        // rotation_y.c0.z = -sin;
-        // rotation_y.c1.y = 1.;
-        // rotation_y.c2.x = sin;
-        // rotation_y.c2.z = cos;
-        // rotation_y.c3.w = 1.;
-        //
-        // rotation_z.c0.x = cos;
-        // rotation_z.c0.y = sin;
-        // rotation_z.c1.x = -sin;
-        // rotation_z.c1.y = cos;
-        // rotation_z.c2.z = 1.;
-        // rotation_z.c3.w = 1.;
-        //
-        // rotation_mtx
-        //     .multiply(rotation_x)
-        //     .multiply(rotation_y)
-        //     .multiply(rotation_z);
-        *self = *rotation_mtx.multiply(*self);
+        *self = rotation_mtx * *self;
         self
     }
 
@@ -302,21 +272,7 @@ impl Mat4 {
 
         mtx.c3.w = 1.;
 
-        // mtx.c0.x = 1. - 2. * y_squared - 2. * z_squared;
-        // mtx.c0.y = 2. * quaternion.x * quaternion.y + 2. * quaternion.w * quaternion.z;
-        // mtx.c0.z = 2. * quaternion.x * quaternion.z - 2. * quaternion.w * quaternion.y;
-        //
-        // mtx.c1.x = 2. * quaternion.x * quaternion.y - 2. * quaternion.w * quaternion.z;
-        // mtx.c1.y = 1. - 2. * x_squared - 2. * z_squared;
-        // mtx.c1.z = 2. * quaternion.y * quaternion.z - 2. * quaternion.w * quaternion.x;
-        //
-        // mtx.c2.x = 2. * quaternion.x * quaternion.z + 2. * quaternion.w * quaternion.y;
-        // mtx.c2.y = 2. * quaternion.y * quaternion.z + 2. * quaternion.w * quaternion.x;
-        // mtx.c2.z = 1. - 2. * x_squared - 2. * y_squared;
-        //
-        // mtx.c3.w = 1.;
-
-        *self = *mtx.multiply(*self);
+        *self = mtx * *self;
         self
     }
 
@@ -333,7 +289,7 @@ impl Mat4 {
         scale_mtx.c2.z = vec.z;
         scale_mtx.c3.w = 1.0;
 
-        *self = *scale_mtx.multiply(*self);
+        *self = scale_mtx * *self;
         self
     }
 
@@ -495,7 +451,7 @@ mod tests {
         second.c3.z = 6.0;
         second.c3.w = 5.0;
 
-        first.multiply(second);
+        first = first * second;
 
         // column 1
         assert_eq!(first.c0.x, 50.0);

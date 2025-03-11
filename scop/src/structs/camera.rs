@@ -33,7 +33,7 @@ impl Camera {
     }
 
     pub fn get_view_matrix(&self) -> Mat4 {
-        math::Mat4::look_at(self.position, self.position.add(self.front), self.up)
+        math::Mat4::look_at(self.position, self.position + self.front, self.up)
     }
 }
 
@@ -47,37 +47,37 @@ impl Controllable for Camera {
     }
 
     fn move_forward(&mut self) {
-        self.position = self.position.add(self.front.scale(self.get_speed()));
+        self.position = self.position + self.front.scale(self.get_speed());
     }
 
     fn move_backward(&mut self) {
-        self.position = self.position.sub(self.front.scale(self.get_speed()));
+        self.position = self.position - self.front.scale(self.get_speed());
     }
 
     fn move_left(&mut self) {
-        self.position = self.position.sub(
-            self.front
+        self.position = self.position
+            - self
+                .front
                 .cross(self.up)
                 .normalize()
-                .scale(self.get_speed()),
-        );
+                .scale(self.get_speed());
     }
 
     fn move_right(&mut self) {
-        self.position = self.position.add(
-            self.front
+        self.position = self.position
+            + self
+                .front
                 .cross(self.up)
                 .normalize()
-                .scale(self.get_speed()),
-        );
+                .scale(self.get_speed());
     }
 
     fn move_up(&mut self) {
-        self.position = self.position.add(self.up.scale(self.get_speed()));
+        self.position = self.position + self.up.scale(self.get_speed());
     }
 
     fn move_down(&mut self) {
-        self.position = self.position.sub(self.up.scale(self.get_speed()));
+        self.position = self.position - self.up.scale(self.get_speed());
     }
 
     fn rotate(&mut self, yaw: f32, pitch: f32) {
