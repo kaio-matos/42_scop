@@ -123,6 +123,57 @@ impl Window {
                     if action == Action::Press {
                         self.hold_keys.insert(key, true);
                     } else if action == Action::Release {
+                        // make sure we release all of them, even if the key was pressed by using a
+                        // modifier
+                        self.hold_keys.insert(
+                            KeyEvent {
+                                key: k,
+                                modifiers: Modifiers::empty(),
+                            },
+                            false,
+                        );
+                        self.hold_keys.insert(
+                            KeyEvent {
+                                key: k,
+                                modifiers: Modifiers::Alt,
+                            },
+                            false,
+                        );
+                        self.hold_keys.insert(
+                            KeyEvent {
+                                key: k,
+                                modifiers: Modifiers::Shift,
+                            },
+                            false,
+                        );
+                        self.hold_keys.insert(
+                            KeyEvent {
+                                key: k,
+                                modifiers: Modifiers::Control,
+                            },
+                            false,
+                        );
+                        self.hold_keys.insert(
+                            KeyEvent {
+                                key: k,
+                                modifiers: Modifiers::Super,
+                            },
+                            false,
+                        );
+                        self.hold_keys.insert(
+                            KeyEvent {
+                                key: k,
+                                modifiers: Modifiers::NumLock,
+                            },
+                            false,
+                        );
+                        self.hold_keys.insert(
+                            KeyEvent {
+                                key: k,
+                                modifiers: Modifiers::CapsLock,
+                            },
+                            false,
+                        );
                         self.hold_keys.insert(key, false);
                     }
                 }
