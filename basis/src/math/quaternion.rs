@@ -41,9 +41,32 @@ impl ops::Mul<Quaternion> for Quaternion {
     }
 }
 
+impl ops::Mul<f32> for Quaternion {
+    type Output = Quaternion;
+
+    fn mul(self, rhs: f32) -> Self {
+        Self {
+            w: self.w * rhs,
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+        }
+    }
+}
+
 impl Quaternion {
     pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
         Self { x, y, z, w }
+    }
+
+    pub fn from_euler_angles(axis: Vec3, radians: f32) -> Self {
+        let mut q = Self::default();
+        q.w = f32::cos(radians / 2.);
+        q.x = axis.x * f32::sin(radians / 2.);
+        q.y = axis.y * f32::sin(radians / 2.);
+        q.z = axis.z * f32::sin(radians / 2.);
+
+        q
     }
 
     pub fn normalize(&self) -> Self {
@@ -57,18 +80,12 @@ impl Quaternion {
         }
     }
 
-    pub fn rotate(&self, axis: Vec3, radians: f32) -> Self {
-        let mut temporary = Self::default();
-        temporary.w = f32::cos(radians / 2.);
-        temporary.x = axis.x * f32::sin(radians / 2.);
-        temporary.y = axis.y * f32::sin(radians / 2.);
-        temporary.z = axis.z * f32::sin(radians / 2.);
-
-        temporary * *self
+    pub fn rotate(&self, quaternion: Self) -> Self {
+        quaternion * *self
     }
 
-    pub fn rotate_mut(&mut self, axis: Vec3, radians: f32) -> &mut Self {
-        *self = self.rotate(axis, radians);
+    pub fn rotate_mut(&mut self, quaternion: Self) -> &mut Self {
+        *self = self.rotate(quaternion);
         self
     }
 }

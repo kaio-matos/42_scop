@@ -97,7 +97,7 @@ impl Window {
         found.is_some()
     }
 
-    pub fn on_key_hold(&mut self, key: glfw::Key, modifiers: glfw::Modifiers) -> bool {
+    pub fn on_key_hold(&self, key: glfw::Key, modifiers: glfw::Modifiers) -> bool {
         let is_pressing = self.hold_keys.get(&KeyEvent { key, modifiers });
 
         match is_pressing {

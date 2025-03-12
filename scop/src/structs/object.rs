@@ -1,7 +1,7 @@
-use std::{cell::RefCell, mem, ptr, rc::Rc};
+use std::{mem, ptr};
 
 use basis::{
-    graphics::{glw, wavefront, window::Window},
+    graphics::{glw, wavefront},
     math::{Quaternion, Vec3, VectorFunctions},
 };
 
@@ -12,7 +12,6 @@ pub struct Object {
     pub scale: Vec3,
     pub rgb: Vec3, // TODO: Implement proper material support
 
-    window: Rc<RefCell<Window>>,
     model: wavefront::obj::OBJ,
 
     cached_center: Vec3,
@@ -21,14 +20,13 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(window: Rc<RefCell<Window>>, model: wavefront::obj::OBJ) -> Object {
+    pub fn new(model: wavefront::obj::OBJ) -> Object {
         let mut object = Object {
             position: Vec3::default(),
             rotation: Quaternion::default(),
             scale: Vec3::default(),
             rgb: Vec3::default(),
 
-            window,
             model,
             cached_center: Vec3::default(),
             cached_vertices: Vec::default(),

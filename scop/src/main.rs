@@ -14,8 +14,8 @@ use basis::{
     math::{self, VectorFunctions},
 };
 
-use structs::Camera;
-use traits::Controllable;
+use structs::{Camera, Cube};
+use traits::EntityLifetime;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -23,23 +23,20 @@ use std::rc::Rc;
 static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;
 
-fn draw(window: &Window, obj: &structs::Object, camera: &Camera) {
-    let shader = glw::Shader::new();
-    shader
-        .link_multiple(vec![
-            glw::ShaderType::Vertex("scop/src/shaders/vertex_perspective_shader.glsl"),
-            glw::ShaderType::Fragment("scop/src/shaders/fragment_perspective_shader.glsl"),
-        ])
-        .unwrap();
+fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera) {
     shader.bind();
 
     let mut model_mat = math::Mat4::identity();
-    let mut projection_mat = math::Mat4::perspective(
+    let projection_mat = math::Mat4::perspective(
         45.0_f32.to_radians(),
         (WINDOW_WIDTH / WINDOW_HEIGHT) as f32,
         0.1,
         100.,
     );
+
+    model_mat.scale(obj.scale);
+    model_mat.rotate_around_center(obj.center().negate(), obj.rotation);
+    model_mat.translate(obj.position);
 
     shader
         .get_uniform_location("view")
@@ -47,39 +44,24 @@ fn draw(window: &Window, obj: &structs::Object, camera: &Camera) {
     shader
         .get_uniform_location("projection")
         .uniform_matrix4fv(&projection_mat);
-
     shader
         .get_uniform_location("color")
         .uniform3f(obj.rgb.x, obj.rgb.y, obj.rgb.z);
-
-    model_mat.scale(obj.scale);
-    model_mat.rotate_around_center(obj.center().negate(), obj.rotation);
-    model_mat.translate(obj.position);
-
     shader
         .get_uniform_location("model")
         .uniform_matrix4fv(&model_mat);
+
     obj.draw();
 
     shader.unbind();
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let window = Rc::new(RefCell::new(Window::new(
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        "Hello World!",
-    )));
-
-    window.borrow_mut().init_gl();
-
-    glw::enable(gl::DEPTH_TEST);
-
-    let obj = structs::Object::new(
-        window.clone(),
-        wavefront::obj::load("scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj")?,
-    );
-    let mut objs = Vec::new();
+fn load_cubes(
+    entities: &mut Vec<Box<dyn EntityLifetime>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let obj = structs::Object::new(wavefront::obj::load(
+        "scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj",
+    )?);
 
     let objs_transformation = [
         (
@@ -174,10 +156,38 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         new.color(*rgb);
         new.translate(*position);
         new.rotation = *rotation;
-        objs.push(new);
+        entities.push(Box::new(Cube { object: new }));
     }
 
-    let mut is_wireframe = false;
+    Ok(())
+}
+
+fn setup(entities: &mut Vec<Box<dyn EntityLifetime>>) {
+    for entity in entities.iter_mut() {
+        entity.setup();
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let window = Rc::new(RefCell::new(Window::new(
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        "Hello World!",
+    )));
+
+    window.borrow_mut().init_gl();
+
+    glw::enable(gl::DEPTH_TEST);
+
+    let shader = glw::Shader::new();
+    shader
+        .link_multiple(vec![
+            glw::ShaderType::Vertex("scop/src/shaders/vertex_perspective_shader.glsl"),
+            glw::ShaderType::Fragment("scop/src/shaders/fragment_perspective_shader.glsl"),
+        ])
+        .unwrap();
+
+    let mut entities: Vec<Box<dyn EntityLifetime>> = Vec::new();
     let mut camera = Camera::new(
         math::Vec3::new(0.0, 0.0, 50.0),
         math::Vec3::new(0.0, 0.0, -1.0),
@@ -185,6 +195,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         30.,
         window.clone(),
     );
+    let mut is_wireframe = false;
+
+    load_cubes(&mut entities)?;
+    camera.setup();
+    setup(&mut entities);
 
     while !window.borrow_mut().should_close() {
         window.borrow_mut().compute_deltatime();
@@ -210,82 +225,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         {
             // TODO:
         }
-        if window
-            .borrow_mut()
-            .on_key_hold(graphics::glfw::Key::W, graphics::glfw::Modifiers::empty())
-        {
-            camera.move_up()
-        }
-        if window
-            .borrow_mut()
-            .on_key_hold(graphics::glfw::Key::S, graphics::glfw::Modifiers::empty())
-        {
-            camera.move_down()
-        }
-        if window
-            .borrow_mut()
-            .on_key_hold(graphics::glfw::Key::A, graphics::glfw::Modifiers::empty())
-        {
-            camera.move_left()
-        }
-        if window
-            .borrow_mut()
-            .on_key_hold(graphics::glfw::Key::D, graphics::glfw::Modifiers::empty())
-        {
-            camera.move_right()
+
+        camera.update(&mut window.clone().borrow_mut());
+        for entity in entities.iter_mut() {
+            entity.update(&mut window.clone().borrow_mut());
         }
 
-        if window
-            .borrow_mut()
-            .on_key_hold(graphics::glfw::Key::W, graphics::glfw::Modifiers::Control)
-        {
-            camera.move_forward()
-        }
-
-        if window
-            .borrow_mut()
-            .on_key_hold(graphics::glfw::Key::S, graphics::glfw::Modifiers::Control)
-        {
-            camera.move_backward()
-        }
-
-        if window
-            .borrow_mut()
-            .on_key_hold(graphics::glfw::Key::Up, graphics::glfw::Modifiers::empty())
-        {
-            objs[0]
-                .rotation
-                .rotate_mut(math::Vec3::new(0.1, 0.0, 0.0), 50_f32.to_radians());
-        }
-
-        if window.borrow_mut().on_key_hold(
-            graphics::glfw::Key::Down,
-            graphics::glfw::Modifiers::empty(),
-        ) {
-            objs[0]
-                .rotation
-                .rotate_mut(math::Vec3::new(-0.1, 0.0, 0.0), 50_f32.to_radians());
-        }
-        if window.borrow_mut().on_key_hold(
-            graphics::glfw::Key::Left,
-            graphics::glfw::Modifiers::empty(),
-        ) {
-            objs[0]
-                .rotation
-                .rotate_mut(math::Vec3::new(0.0, -0.1, 0.0), 50_f32.to_radians());
-        }
-        if window.borrow_mut().on_key_hold(
-            graphics::glfw::Key::Right,
-            graphics::glfw::Modifiers::empty(),
-        ) {
-            objs[0]
-                .rotation
-                .rotate_mut(math::Vec3::new(0.0, 0.1, 0.0), 50_f32.to_radians());
-        }
-
-        for obj in objs.iter_mut() {
-            obj.rotation = obj.rotation.normalize();
-            draw(&window.borrow_mut(), &obj, &camera);
+        for entity in entities.iter_mut() {
+            match entity.get_object() {
+                None => {}
+                Some(object) => {
+                    object.rotation = object.rotation.normalize();
+                    draw(&shader, object, &camera);
+                }
+            }
         }
 
         window.borrow_mut().update(&mut |_event| {});
