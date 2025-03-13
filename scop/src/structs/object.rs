@@ -61,8 +61,6 @@ impl Object {
             gl::TRIANGLES,
             self.cached_indices.len() as i32,
             gl::UNSIGNED_INT,
-            // TODO: Investigate why this is working without setting up a EBO
-            // self.cached_indices.as_ptr() as *const c_void,
             ptr::null(),
         );
         self.vao.unbind();
@@ -70,6 +68,7 @@ impl Object {
 
     ///
     /// Refetch all raw vertices and raw indices used by draw call
+    /// and setup the VAO and EBO
     ///
     pub fn recompute(&mut self) {
         self.cached_vertices = self.model.get_raw_vertices();
