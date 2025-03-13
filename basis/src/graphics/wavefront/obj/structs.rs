@@ -169,17 +169,17 @@ pub struct SmoothingGroup<'a> {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct FaceSide {
+pub struct VertexDataReference {
     pub v: usize,
     pub vt: usize,
     pub vn: usize,
 }
-impl FaceSide {
-    pub fn new(v: usize, vt: usize, vn: usize) -> FaceSide {
-        FaceSide { v, vt, vn }
+impl VertexDataReference {
+    pub fn new(v: usize, vt: usize, vn: usize) -> VertexDataReference {
+        VertexDataReference { v, vt, vn }
     }
 }
-impl PartialEq for FaceSide {
+impl PartialEq for VertexDataReference {
     fn eq(&self, other: &Self) -> bool {
         self.v == other.v && self.vt == other.vt && self.vn == other.vn
     }
@@ -187,15 +187,18 @@ impl PartialEq for FaceSide {
 
 #[derive(Debug, Clone, Default)]
 pub struct Face {
-    pub sides: Vec<FaceSide>,
+    pub vertex_references: Vec<VertexDataReference>,
     pub material_name: Option<String>,
     pub material: Option<Material>,
     pub smoothing_group: Option<usize>,
 }
 impl Face {
-    pub fn partial_new(sides: Vec<FaceSide>, material_name: Option<String>) -> Face {
+    pub fn partial_new(
+        vertex_references: Vec<VertexDataReference>,
+        material_name: Option<String>,
+    ) -> Face {
         Face {
-            sides,
+            vertex_references,
             material_name,
             material: None,
             smoothing_group: None,
@@ -213,7 +216,7 @@ impl Face {
 
 impl PartialEq for Face {
     fn eq(&self, other: &Self) -> bool {
-        self.sides == other.sides
+        self.vertex_references == other.vertex_references
     }
 }
 
@@ -264,8 +267,8 @@ impl OBJ {
 
     pub fn get_raw_indices(&self) -> Vec<u32> {
         self.faces.iter().fold(Vec::new(), |mut acc, face| {
-            face.sides.iter().for_each(|side| {
-                acc.push((side.v - 1) as u32);
+            face.vertex_references.iter().for_each(|reference| {
+                acc.push((reference.v - 1) as u32);
             });
             acc
         })

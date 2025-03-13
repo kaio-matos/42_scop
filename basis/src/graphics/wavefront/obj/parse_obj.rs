@@ -231,7 +231,7 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
 #[cfg(test)]
 mod tests {
     use crate::graphics::wavefront::obj::structs::{
-        FaceSide, Vertice, VerticeNormal, VerticeParameterSpace, VerticeTexture,
+        VertexDataReference, Vertice, VerticeNormal, VerticeParameterSpace, VerticeTexture,
     };
 
     use super::*;
@@ -367,15 +367,15 @@ mod tests {
 
         let result = parse_obj(file.to_string()).expect("This should work");
 
-        assert_eq!(result.faces[0].sides[0], FaceSide::new(1, 1, 1));
-        assert_eq!(result.faces[0].sides[1], FaceSide::new(2, 2, 2));
-        assert_eq!(result.faces[0].sides[2], FaceSide::new(3, 3, 3));
-        assert_eq!(result.faces[0].sides[3], FaceSide::new(4, 4, 4));
+        assert_eq!(result.faces[0].vertex_references[0], VertexDataReference::new(1, 1, 1));
+        assert_eq!(result.faces[0].vertex_references[1], VertexDataReference::new(2, 2, 2));
+        assert_eq!(result.faces[0].vertex_references[2], VertexDataReference::new(3, 3, 3));
+        assert_eq!(result.faces[0].vertex_references[3], VertexDataReference::new(4, 4, 4));
 
-        assert_eq!(result.faces[1].sides[0], FaceSide::new(1, 0, 1));
-        assert_eq!(result.faces[1].sides[1], FaceSide::new(2, 0, 2));
-        assert_eq!(result.faces[1].sides[2], FaceSide::new(3, 0, 3));
-        assert_eq!(result.faces[1].sides[3], FaceSide::new(4, 0, 4));
+        assert_eq!(result.faces[1].vertex_references[0], VertexDataReference::new(1, 0, 1));
+        assert_eq!(result.faces[1].vertex_references[1], VertexDataReference::new(2, 0, 2));
+        assert_eq!(result.faces[1].vertex_references[2], VertexDataReference::new(3, 0, 3));
+        assert_eq!(result.faces[1].vertex_references[3], VertexDataReference::new(4, 0, 4));
     }
 
     #[test]
@@ -397,15 +397,15 @@ mod tests {
         let result = parse_obj(file.to_string()).expect("This should work");
 
 
-        assert_eq!(result.faces[0].sides[0], FaceSide::new(1, 0, 0));
-        assert_eq!(result.faces[0].sides[1], FaceSide::new(2, 0, 0));
-        assert_eq!(result.faces[0].sides[2], FaceSide::new(3, 0, 0));
-        assert_eq!(result.faces[0].sides[3], FaceSide::new(4, 0, 0));
+        assert_eq!(result.faces[0].vertex_references[0], VertexDataReference::new(1, 0, 0));
+        assert_eq!(result.faces[0].vertex_references[1], VertexDataReference::new(2, 0, 0));
+        assert_eq!(result.faces[0].vertex_references[2], VertexDataReference::new(3, 0, 0));
+        assert_eq!(result.faces[0].vertex_references[3], VertexDataReference::new(4, 0, 0));
 
-        assert_eq!(result.faces[1].sides[0], FaceSide::new(8, 0, 0));
-        assert_eq!(result.faces[1].sides[1], FaceSide::new(7, 0, 0));
-        assert_eq!(result.faces[1].sides[2], FaceSide::new(6, 0, 0));
-        assert_eq!(result.faces[1].sides[3], FaceSide::new(5, 0, 0));
+        assert_eq!(result.faces[1].vertex_references[0], VertexDataReference::new(8, 0, 0));
+        assert_eq!(result.faces[1].vertex_references[1], VertexDataReference::new(7, 0, 0));
+        assert_eq!(result.faces[1].vertex_references[2], VertexDataReference::new(6, 0, 0));
+        assert_eq!(result.faces[1].vertex_references[3], VertexDataReference::new(5, 0, 0));
     }
 
     #[test]

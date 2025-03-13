@@ -1,7 +1,8 @@
 use std::vec::IntoIter;
 
 use super::structs::{
-    Face, FaceSide, ParseError, Vertice, VerticeNormal, VerticeParameterSpace, VerticeTexture,
+    Face, ParseError, VertexDataReference, Vertice, VerticeNormal, VerticeParameterSpace,
+    VerticeTexture,
 };
 
 pub fn parse_vertice(tokens: &mut IntoIter<&str>, line_n: usize) -> Result<Vertice, ParseError> {
@@ -98,11 +99,13 @@ pub fn parse_face(
 
         match (v, vt, vn) {
             (Ok(v), Ok(vt), Ok(vn)) => {
-                face.sides.push(FaceSide::new(v, vt, vn));
+                face.vertex_references
+                    .push(VertexDataReference::new(v, vt, vn));
                 is_tripplets_format = true
             }
             (Ok(v), Err(_), Ok(vn)) => {
-                face.sides.push(FaceSide::new(v, 0, vn));
+                face.vertex_references
+                    .push(VertexDataReference::new(v, 0, vn));
                 is_twins_format = true
             }
             _ => return Err(ParseError::InvalidFaceSide(line_n, "Error".to_string())),
