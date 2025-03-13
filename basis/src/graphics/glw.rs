@@ -125,7 +125,7 @@ impl BufferObject {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vao {
     id: gl::types::GLuint,
 }

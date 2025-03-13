@@ -1,4 +1,4 @@
-use std::{mem, ptr};
+use std::{ffi::c_void, mem, ptr};
 
 use basis::{
     graphics::{glw, wavefront},
@@ -12,8 +12,9 @@ pub struct Object {
     pub scale: Vec3,
     pub rgb: Vec3, // TODO: Implement proper material support
 
-    model: wavefront::obj::OBJ,
+    pub model: wavefront::obj::OBJ,
 
+    vao: glw::Vao,
     cached_center: Vec3,
     cached_vertices: Vec<f32>,
     cached_indices: Vec<u32>,
@@ -28,6 +29,7 @@ impl Object {
             rgb: Vec3::default(),
 
             model,
+            vao: glw::Vao::new(),
             cached_center: Vec3::default(),
             cached_vertices: Vec::default(),
             cached_indices: Vec::default(),
@@ -54,9 +56,27 @@ impl Object {
     }
 
     pub fn draw(&self) {
-        // TODO: Store vao reference into `self` after the first draw call
-        let vao = glw::Vao::new();
-        vao.bind();
+        self.vao.bind();
+        glw::draw_elements(
+            gl::TRIANGLES,
+            self.cached_indices.len() as i32,
+            gl::UNSIGNED_INT,
+            // TODO: Investigate why this is working without setting up a EBO
+            // self.cached_indices.as_ptr() as *const c_void,
+            ptr::null(),
+        );
+        self.vao.unbind();
+    }
+
+    ///
+    /// Refetch all raw vertices and raw indices used by draw call
+    ///
+    pub fn recompute(&mut self) {
+        self.cached_vertices = self.model.get_raw_vertices();
+        self.cached_indices = self.model.get_raw_indices();
+
+        self.vao = glw::Vao::new();
+        self.vao.bind();
         let vbo = glw::BufferObject::new(gl::ARRAY_BUFFER, gl::STATIC_DRAW);
         let ebo = glw::BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, gl::STATIC_DRAW);
         vbo.bind();
@@ -73,24 +93,7 @@ impl Object {
             ptr::null(),
         );
         position_attribute.enable();
-
-        glw::draw_elements(
-            gl::TRIANGLES,
-            self.cached_indices.len() as i32,
-            gl::UNSIGNED_INT,
-            // TODO: Investigate why this is working without setting up a EBO
-            // self.cached_indices.as_ptr() as *const c_void,
-            ptr::null(),
-        );
-        vao.unbind();
-    }
-
-    ///
-    /// Refetch all raw vertices and raw indices used by draw call
-    ///
-    pub fn recompute(&mut self) {
-        self.cached_vertices = self.model.get_raw_vertices();
-        self.cached_indices = self.model.get_raw_indices();
+        self.vao.unbind();
     }
 
     fn compute_center(&mut self) {
