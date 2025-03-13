@@ -75,7 +75,6 @@ impl Object {
         self.cached_vertices = self.model.get_raw_vertices();
         self.cached_indices = self.model.get_raw_indices();
 
-        self.vao = glw::Vao::new();
         self.vao.bind();
         let vbo = glw::BufferObject::new(gl::ARRAY_BUFFER, gl::STATIC_DRAW);
         let ebo = glw::BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, gl::STATIC_DRAW);
