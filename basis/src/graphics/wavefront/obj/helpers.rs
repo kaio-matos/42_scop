@@ -1,8 +1,13 @@
 use std::vec::IntoIter;
 
-use super::structs::{
-    Face, ParseError, VertexDataReference, Vertice, VerticeNormal, VerticeParameterSpace,
-    VerticeTexture,
+use crate::graphics::triangulation;
+
+use super::{
+    structs::{
+        Face, ParseError, VertexDataReference, Vertice, VerticeNormal, VerticeParameterSpace,
+        VerticeTexture,
+    },
+    OBJ,
 };
 
 pub fn parse_vertice(tokens: &mut IntoIter<&str>, line_n: usize) -> Result<Vertice, ParseError> {
@@ -135,5 +140,13 @@ pub fn parse_smoothing_group(
             })?;
             Ok(id)
         }
+    }
+}
+
+pub fn triangulate_polygons(obj: &mut OBJ) {
+    for face in obj.faces.iter_mut() {
+        let mut vertices = face.vertex_references.iter().map(|v| v.clone()).collect();
+        let triangulated = triangulation::_2d::fan::triangulate(&mut vertices);
+        face.vertex_references = triangulated;
     }
 }

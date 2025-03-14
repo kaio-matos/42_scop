@@ -7,6 +7,7 @@ use structs::ParseError;
 use crate::graphics::wavefront;
 use crate::graphics::wavefront::obj::parse_obj::parse_obj;
 
+pub use structs::VertexDataReference;
 pub use structs::OBJ;
 
 #[derive(Debug)]

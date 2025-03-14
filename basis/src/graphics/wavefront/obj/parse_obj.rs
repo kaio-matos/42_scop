@@ -225,6 +225,9 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
         current_line += 1;
         previous_line = Some(line);
     }
+
+    helpers::triangulate_polygons(&mut obj);
+
     Ok(obj)
 }
 
