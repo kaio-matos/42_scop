@@ -145,8 +145,7 @@ pub fn parse_smoothing_group(
 
 pub fn triangulate_polygons(obj: &mut OBJ) {
     for face in obj.faces.iter_mut() {
-        let mut vertices = face.vertex_references.iter().map(|v| v.clone()).collect();
-        let triangulated = triangulation::_2d::fan::triangulate(&mut vertices);
+        let triangulated = triangulation::_2d::fan::triangulate(&mut face.vertex_references);
         face.vertex_references = triangulated;
     }
 }
