@@ -33,6 +33,7 @@ use crate::math;
 /// vbo.store_f32(&vertices);
 /// vbo.unbind(); // this should be called after finishing all actions
 /// ```
+#[derive(Debug, Clone, Copy)]
 pub struct BufferObject {
     id: gl::types::GLuint,
     r#type: gl::types::GLenum,
@@ -125,7 +126,7 @@ impl BufferObject {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vao {
     id: gl::types::GLuint,
 }
@@ -187,7 +188,7 @@ impl Vao {
 /// );
 /// position_attribute.enable();
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct VertexAttribute {
     index: GLuint,
 }
@@ -221,7 +222,7 @@ impl VertexAttribute {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Shader {
     id: gl::types::GLuint,
 }
@@ -331,7 +332,7 @@ impl Shader {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct UniformLocation {
     id: gl::types::GLint,
     name: &'static str,
@@ -377,7 +378,7 @@ impl UniformLocation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct ShaderFile {
     id: gl::types::GLuint,
     r#type: gl::types::GLenum,
@@ -421,6 +422,87 @@ impl ShaderFile {
     pub fn delete(&self) {
         unsafe {
             gl::DeleteShader(self.id);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Texture {
+    id: gl::types::GLuint,
+    r#type: gl::types::GLenum,
+}
+
+impl Texture {
+    ///
+    /// `r#type`: The type of the texture. It can be: `gl::TEXTURE_2D`, `gl::TEXTURE_3D`, etc.
+    ///
+    pub fn new(r#type: gl::types::GLenum) -> Self {
+        let mut id = 0;
+        unsafe {
+            gl::GenTextures(1, &mut id);
+        }
+        Self { id, r#type }
+    }
+
+    pub fn active(&self, index: gl::types::GLenum) {
+        unsafe {
+            gl::ActiveTexture(index);
+        }
+    }
+
+    pub fn bind(&self) {
+        unsafe {
+            gl::BindTexture(self.r#type, self.id);
+        }
+    }
+
+    pub fn tex_parameteri(&self, pname: types::GLenum, param: types::GLint) {
+        unsafe {
+            gl::TexParameteri(self.r#type, pname, param);
+        }
+    }
+
+    pub fn tex_parameterfv(&self, pname: types::GLenum, param: Vec<f32>) {
+        unsafe {
+            gl::TexParameterfv(self.r#type, pname, param.as_ptr());
+        }
+    }
+
+    pub fn tex_image2d(
+        &self,
+        level: types::GLint,
+        internal_format: types::GLint,
+        width: types::GLsizei,
+        height: types::GLsizei,
+        border: types::GLint,
+        format: types::GLenum,
+        type_: types::GLenum,
+        pixels: *const c_void,
+    ) {
+        unsafe {
+            gl::TexImage2D(
+                self.r#type,
+                level,
+                internal_format,
+                width,
+                height,
+                border,
+                format,
+                type_,
+                pixels,
+            )
+        }
+    }
+
+    pub fn generate_mipmap(&self) {
+        unsafe {
+            gl::GenerateMipmap(self.r#type);
+        }
+    }
+
+    pub fn unbind(&self) {
+        unsafe {
+            gl::BindTexture(self.r#type, 0);
         }
     }
 }

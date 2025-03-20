@@ -38,9 +38,16 @@ impl std::fmt::Display for LoadMTLError {
 pub fn load(file_path: &str) -> Result<MTL, LoadMTLError> {
     let file_content = std::fs::read_to_string(file_path)?;
 
-    let obj = parse_mtl(file_content.as_str())?;
+    let mut materials = parse_mtl(file_content.as_str())?;
 
-    Ok(obj)
+    for (_, material) in &mut materials {
+        if let Some(file_path) = &material.diffuse_reflectivity_texture_map_file_path {
+            let file_content = std::fs::read(file_path)?;
+            material.diffuse_reflectivity_texture_map = Some(file_content)
+        }
+    }
+
+    Ok(materials)
 }
 
 pub fn load_files(file_path: Vec<String>) -> Result<Vec<MTL>, LoadMTLError> {

@@ -7,7 +7,7 @@ mod traits;
 use basis::{
     graphics::{
         self,
-        glw::{self},
+        glw::{self, Texture},
         wavefront,
         window::Window,
     },
@@ -45,9 +45,6 @@ fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera) {
         .get_uniform_location("projection")
         .uniform_matrix4fv(&projection_mat);
     shader
-        .get_uniform_location("color")
-        .uniform3f(obj.rgb.x, obj.rgb.y, obj.rgb.z);
-    shader
         .get_uniform_location("model")
         .uniform_matrix4fv(&model_mat);
 
@@ -59,9 +56,8 @@ fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera) {
 fn load_cubes(
     entities: &mut Vec<Box<dyn EntityLifetime>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let obj = structs::Object::new(wavefront::obj::load(
-        "scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj",
-    )?);
+    let mut obj = structs::Object::new(wavefront::obj::load("scop/src/resources/cube/cube.obj")?);
+    obj.model.texture = helpers::load_custom_texture("scop/src/resources/raw_texture.txt")?;
 
     let objs_transformation = [
         (

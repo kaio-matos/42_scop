@@ -87,6 +87,10 @@ pub struct Material {
     pub specular_highlight_exponent: f32,
     pub sharpness: f32,
     pub optical_density: f32,
+
+    /// material diffuse is multiplied by the texture value
+    pub diffuse_reflectivity_texture_map_file_path: Option<String>,
+    pub diffuse_reflectivity_texture_map: Option<Vec<u8>>,
 }
 
 /*

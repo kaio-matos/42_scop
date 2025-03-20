@@ -245,6 +245,11 @@ pub struct OBJ {
     //
     pub mtls_identifiers: Vec<String>,
     pub mtls: Vec<wavefront::mtl::MTL>,
+
+    //
+    // Texture
+    //
+    pub texture: (u32, u32, Vec<u8>),
 }
 
 impl OBJ {

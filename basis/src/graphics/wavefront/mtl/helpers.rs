@@ -179,3 +179,20 @@ fn parse_material_optical_density(
 
     Ok(optical_density)
 }
+
+fn parse_material_map_Kd(tokens: &mut IntoIter<&str>, line_n: usize) -> Result<String, ParseError> {
+    let token = tokens.next();
+
+    if token.is_none() {
+        return Err(ParseError::InvalidToken(
+            line_n,
+            "Missing 'map_Kd' argument".to_string(),
+        ));
+    }
+
+    if token.unwrap().starts_with('-') {
+        todo!("'map_Kd' doesn't support options, please only use the file path");
+    }
+
+    Ok(token.unwrap().to_string())
+}
