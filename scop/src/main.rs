@@ -7,7 +7,7 @@ mod traits;
 use basis::{
     graphics::{
         self,
-        glw::{self},
+        glw::{self, Texture},
         wavefront,
         window::Window,
     },
@@ -45,11 +45,10 @@ fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera) {
         .get_uniform_location("projection")
         .uniform_matrix4fv(&projection_mat);
     shader
-        .get_uniform_location("color")
-        .uniform3f(obj.rgb.x, obj.rgb.y, obj.rgb.z);
-    shader
         .get_uniform_location("model")
         .uniform_matrix4fv(&model_mat);
+
+    shader.get_uniform_location("ourTexture").uniform1i(0);
 
     obj.draw();
 
@@ -59,8 +58,9 @@ fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera) {
 fn load_cubes(
     entities: &mut Vec<Box<dyn EntityLifetime>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let obj = structs::Object::new(wavefront::obj::load(
-        "scop/src/resources/cube_colorized_simple/cube_colorized_simple.obj",
+    let mut obj = structs::Object::new(wavefront::obj::load("scop/src/resources/cube/cube.obj")?);
+    obj.set_texture(helpers::load_custom_texture(
+        "scop/src/resources/raw_texture.txt",
     )?);
 
     let objs_transformation = [
@@ -107,7 +107,7 @@ fn load_cubes(
             math::Vec3::new(0.5, 0.0, 0.5),            // Color (Purple)
         ),
         (
-            math::Vec3::new(0.0, 0.0, -10.0),          // Position
+            math::Vec3::new(0.0, 10.0, -10.0),         // Position
             math::Vec3::new(3.0, 3.0, 3.0),            // Scale
             math::Quaternion::new(0.0, 0.0, 0.0, 1.0), // Rotation (identity quaternion)
             math::Vec3::new(0.5, 0.5, 0.0),            // Color (Olive)
@@ -189,7 +189,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut entities: Vec<Box<dyn EntityLifetime>> = Vec::new();
     let mut camera = Camera::new(
-        math::Vec3::new(0.0, 0.0, 50.0),
+        math::Vec3::new(0.0, 0.0, 10.0),
         math::Vec3::new(0.0, 0.0, -1.0),
         math::Vec3::new(0.0, 1.0, 0.0),
         30.,

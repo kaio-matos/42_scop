@@ -1,7 +1,10 @@
 use std::{ffi::c_void, mem, ptr};
 
 use basis::{
-    graphics::{glw, wavefront},
+    graphics::{
+        glw::{self},
+        wavefront,
+    },
     math::{Quaternion, Vec3, VectorFunctions},
 };
 
@@ -10,11 +13,12 @@ pub struct Object {
     pub position: Vec3,
     pub rotation: Quaternion,
     pub scale: Vec3,
-    pub rgb: Vec3, // TODO: Implement proper material support
+    pub rgb: Vec3,
 
     pub model: wavefront::obj::OBJ,
 
     vao: glw::Vao,
+    texture: glw::Texture,
     cached_center: Vec3,
     cached_vertices: Vec<f32>,
     cached_indices: Vec<u32>,
@@ -30,6 +34,7 @@ impl Object {
 
             model,
             vao: glw::Vao::new(),
+            texture: glw::Texture::new(gl::TEXTURE_3D),
             cached_center: Vec3::default(),
             cached_vertices: Vec::default(),
             cached_indices: Vec::default(),
@@ -55,8 +60,15 @@ impl Object {
         self.cached_center * self.scale // scale by the object's scale
     }
 
+    pub fn set_texture(&mut self, texture: (u32, u32, Vec<u8>)) {
+        self.model.texture = texture;
+        self.recompute();
+    }
+
     pub fn draw(&self) {
         self.vao.bind();
+        self.texture.active(gl::TEXTURE0);
+        self.texture.bind();
         glw::draw_elements(
             gl::TRIANGLES,
             self.cached_indices.len() as i32,
@@ -71,7 +83,10 @@ impl Object {
     /// and setup the VAO and EBO
     ///
     pub fn recompute(&mut self) {
-        self.cached_vertices = self.model.get_raw_vertices();
+        let model_vertices = self.model.get_raw_vertices(self.rgb);
+        let vertices = model_vertices;
+
+        self.cached_vertices = vertices;
         self.cached_indices = self.model.get_raw_indices();
 
         self.vao.bind();
@@ -81,17 +96,61 @@ impl Object {
         ebo.bind();
         vbo.store_f32(&self.cached_vertices);
         ebo.store_u32(&self.cached_indices);
-        let data_length: i32 = 4;
+
+        let stride_length = 10 * mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei;
+        let start_pointer = ptr::null::<gl::types::GLfloat>();
         let position_attribute = glw::VertexAttribute::new(
             0,
-            data_length,
+            4,
             gl::FLOAT,
             gl::FALSE,
-            data_length * mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei,
-            ptr::null(),
+            stride_length,
+            start_pointer as *const c_void,
         );
         position_attribute.enable();
+        let color_attribute =
+            glw::VertexAttribute::new(1, 3, gl::FLOAT, gl::FALSE, stride_length, unsafe {
+                start_pointer.add(4) as *const c_void
+            });
+        color_attribute.enable();
+        let texture_coordinate_attribute =
+            glw::VertexAttribute::new(2, 3, gl::FLOAT, gl::FALSE, stride_length, unsafe {
+                start_pointer.add(7) as *const c_void
+            });
+        texture_coordinate_attribute.enable();
+
+        self.recompute_texture();
+
         self.vao.unbind();
+    }
+
+    fn recompute_texture(&mut self) {
+        self.texture.bind();
+        self.texture
+            .tex_parameteri(gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
+        self.texture
+            .tex_parameteri(gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
+        self.texture
+            .tex_parameteri(gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
+
+        self.texture
+            .tex_parameteri(gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+        self.texture
+            .tex_parameteri(gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+
+        self.texture.tex_image3d(
+            0,
+            gl::RGB as i32,
+            self.model.texture.0 as i32,
+            self.model.texture.1 as i32,
+            1,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            self.model.texture.2.as_ptr() as *const std::ffi::c_void,
+        );
+
+        self.texture.generate_mipmap();
     }
 
     fn compute_center(&mut self) {

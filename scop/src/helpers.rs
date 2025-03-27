@@ -1,4 +1,4 @@
-use std::{mem, ptr};
+use std::{fs, mem, ptr};
 
 use basis::graphics::glw;
 
@@ -88,4 +88,29 @@ pub fn draw_triangles(vertices: &[f32]) {
     vao.bind();
     glw::draw_arrays(gl::TRIANGLES, 0, vertex_count as i32);
     vao.unbind();
+}
+
+pub fn load_custom_texture(path: &str) -> Result<(u32, u32, Vec<u8>), Box<dyn std::error::Error>> {
+    let file = fs::read_to_string(path)?;
+
+    let mut lines = file.lines();
+    let mut width = 0;
+    let mut height = 0;
+
+    // first line `width height`
+    if let Some(line) = lines.next() {
+        let mut dimensions = line.split_whitespace();
+        width = dimensions.next().unwrap().parse::<u32>()?;
+        height = dimensions.next().unwrap().parse::<u32>()?;
+    }
+    let mut texture_data = Vec::new();
+    // second line `number number number ....`
+    if let Some(line) = lines.next() {
+        let data = line.split_whitespace();
+        for number in data {
+            texture_data.push(number.parse::<u8>()?);
+        }
+    }
+
+    Result::Ok((width, height, texture_data))
 }

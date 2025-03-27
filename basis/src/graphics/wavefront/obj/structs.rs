@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
-use crate::graphics::wavefront::{
-    self,
-    mtl::{Material, MTL},
+use crate::{
+    graphics::wavefront::{
+        self,
+        mtl::{Material, MTL},
+    },
+    math,
 };
 
 #[derive(Debug)]
@@ -245,6 +248,11 @@ pub struct OBJ {
     //
     pub mtls_identifiers: Vec<String>,
     pub mtls: Vec<wavefront::mtl::MTL>,
+
+    //
+    // Texture
+    //
+    pub texture: (u32, u32, Vec<u8>),
 }
 
 impl OBJ {
@@ -252,7 +260,19 @@ impl OBJ {
         self.mtls.len() > 0
     }
 
-    pub fn get_raw_vertices(&self) -> Vec<f32> {
+    pub fn get_raw_vertices(&self, rgb: math::Vec3) -> Vec<f32> {
+        let mut j = 0;
+        let texture = vec![
+            0.0, 0.0, 0.0, // Bottom-left-back
+            1.0, 0.0, 0.0, // Bottom-right-back
+            1.0, 1.0, 0.0, // Top-right-back
+            0.0, 1.0, 0.0, // Top-left-back
+            0.0, 0.0, 1.0, // Bottom-left-front
+            1.0, 0.0, 1.0, // Bottom-right-front
+            1.0, 1.0, 1.0, // Top-right-front
+            0.0, 1.0, 1.0, // Top-left-front
+        ];
+
         self.vertices.iter().fold(
             Vec::with_capacity(self.vertices.len() * 4),
             |mut acc, vertice| {
@@ -260,6 +280,26 @@ impl OBJ {
                 acc.push(vertice.y);
                 acc.push(vertice.z);
                 acc.push(vertice.w);
+                acc.push(rgb.x);
+                acc.push(rgb.y);
+                acc.push(rgb.z);
+                if let Some(coord) = texture.get(j) {
+                    acc.push(*coord);
+                } else {
+                    acc.push(0.0);
+                }
+                if let Some(coord) = texture.get(j + 1) {
+                    acc.push(*coord);
+                } else {
+                    acc.push(0.0);
+                }
+                if let Some(coord) = texture.get(j + 2) {
+                    acc.push(*coord);
+                } else {
+                    acc.push(0.0);
+                }
+                j += 3;
+
                 acc
             },
         )
