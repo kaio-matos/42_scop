@@ -68,10 +68,13 @@ pub fn parse_mtl(data: &str) -> Result<MTL, ParseError> {
                 // Ignore comments
                 Ok(())
             }
-            unknown => Err(ParseError::InvalidToken(
-                current_line,
-                format!("Unknown token: '{unknown}'"),
-            )),
+            unknown => {
+                // Err(ParseError::InvalidToken(
+                //     current_line,
+                //     format!("Unknown token: '{unknown}'"),
+                // ))
+                Ok(())
+            }
         }?;
         current_line += 1;
     }

@@ -57,30 +57,30 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
             //
             "cstype" => {
                 // Parse curve or surface type
-                todo!("Implement cstype");
+                todo("Implement cstype")
             }
             "deg" => {
                 // Parse degree
-                todo!("Implement deg");
+                todo("Implement deg")
             }
             "bmat" => {
                 // Parse basis matrix
-                todo!("Implement bmat");
+                todo("Implement bmat")
             }
             "step" => {
                 // Parse step size
-                todo!("Implement step");
+                todo("Implement step")
             }
             //
             // Elements
             //
             "p" => {
                 // Parse point
-                todo!("Implement p");
+                todo("Implement p")
             }
             "l" => {
                 // Parse line
-                todo!("Implement l");
+                todo("Implement l")
             }
             "f" => {
                 // Parse face
@@ -93,56 +93,56 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
             }
             "curv" => {
                 // Parse curve
-                todo!("Implement curv");
+                todo("Implement curv")
             }
             "curv2" => {
                 // Parse 2D curve
-                todo!("Implement curv2");
+                todo("Implement curv2")
             }
             "surf" => {
                 // Parse surface
-                todo!("Implement surf");
+                todo("Implement surf")
             }
             //
             // Free-form curve/surface body statements
             //
             "parm" => {
                 // Parse parameter values
-                todo!("Implement parm");
+                todo("Implement parm")
             }
             "trim" => {
                 // Parse outer trimming loop
-                todo!("Implement trim");
+                todo("Implement trim")
             }
             "hole" => {
                 // Parse inner trimming loop
-                todo!("Implement hole");
+                todo("Implement hole")
             }
             "scrv" => {
                 // Parse special curve
-                todo!("Implement srcv");
+                todo("Implement srcv")
             }
             "sp" => {
                 // Parse special point
-                todo!("Implement sp");
+                todo("Implement sp")
             }
             "end" => {
                 // Parse end statement
-                todo!("Implement end");
+                todo("Implement end")
             }
             //
             // Connectivity between free-form surfaces
             //
             "con" => {
                 // Parse connect
-                todo!("Implement con");
+                todo("Implement con")
             }
             //
             // Grouping
             //
             "g" => {
                 // Parse group name
-                todo!("Implement g");
+                todo("Implement g")
             }
             "s" => {
                 // Parse smoothing group
@@ -151,7 +151,7 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
             }
             "mg" => {
                 // Parse merging group
-                todo!("Implement mg");
+                todo("Implement mg")
             }
             "o" => {
                 // Parse object name
@@ -163,19 +163,19 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
             //
             "bevel" => {
                 // Parse bevel interpolation
-                todo!("Implement bevel");
+                todo("Implement bevel")
             }
             "c_interp" => {
                 // Parse color interpolation
-                todo!("Implement c_interp");
+                todo("Implement c_interp")
             }
             "d_interp" => {
                 // Parse dissolve interpolation
-                todo!("Implement d_interp");
+                todo("Implement d_interp")
             }
             "lod" => {
                 // Parse level of detail
-                todo!("Implement lod");
+                todo("Implement lod")
             }
             "usemtl" => {
                 // Skip... This is done during the face parsing
@@ -199,19 +199,19 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
             }
             "shadow_obj" => {
                 // Parse shadow casting
-                todo!("Implement shadow_obj");
+                todo("Implement shadow_obj")
             }
             "trace_obj" => {
                 // Parse ray tracing
-                todo!("Implement trace_obj");
+                todo("Implement trace_obj")
             }
             "ctech" => {
                 // Parse curve approximation technique
-                todo!("Implement c_tech");
+                todo("Implement c_tech")
             }
             "stech" => {
                 // Parse surface approximation technique
-                todo!("Implement stech");
+                todo("Implement stech")
             }
             "#" => {
                 // Ignore comments
@@ -229,6 +229,10 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
     helpers::triangulate_polygons(&mut obj);
 
     Ok(obj)
+}
+
+fn todo(_line: &str) -> Result<(), ParseError> {
+    Ok(())
 }
 
 #[cfg(test)]

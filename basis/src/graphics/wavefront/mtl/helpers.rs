@@ -66,10 +66,13 @@ pub fn parse_material(
             "newmtl" => {
                 break;
             }
-            unknown => Err(ParseError::InvalidToken(
-                line_n,
-                format!("Unknown statement: '{unknown}'"),
-            ))?,
+            unknown => {
+                // Err(ParseError::InvalidToken(
+                //     line_n,
+                //     format!("Unknown statement: '{unknown}'"),
+                // ))?
+                continue;
+            }
         }
 
         read_lines += 1;
