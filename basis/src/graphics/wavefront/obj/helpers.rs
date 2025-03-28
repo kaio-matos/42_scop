@@ -1,23 +1,22 @@
 use std::vec::IntoIter;
 
-use crate::graphics::triangulation;
+use crate::{graphics::triangulation, math};
 
 use super::{
     structs::{
-        Face, ParseError, VertexDataReference, Vertice, VerticeNormal, VerticeParameterSpace,
-        VerticeTexture,
+        Face, ParseError, VertexDataReference, VerticeNormal, VerticeParameterSpace, VerticeTexture,
     },
     OBJ,
 };
 
-pub fn parse_vertice(tokens: &mut IntoIter<&str>, line_n: usize) -> Result<Vertice, ParseError> {
+pub fn parse_vertice(tokens: &mut IntoIter<&str>, line_n: usize) -> Result<math::Vec4, ParseError> {
     let x = tokens.next().unwrap().parse::<f32>();
     let y = tokens.next().unwrap().parse::<f32>();
     let z = tokens.next().unwrap().parse::<f32>();
     let w = tokens.next().unwrap_or("1.0").parse::<f32>();
 
     match (x, y, z, w) {
-        (Ok(x), Ok(y), Ok(z), Ok(w)) => Ok(Vertice { x, y, z, w }),
+        (Ok(x), Ok(y), Ok(z), Ok(w)) => Ok(math::Vec4::new(x, y, z, w)),
         _ => Err(ParseError::InvalidVertex(line_n, "Error".to_string())),
     }
 }

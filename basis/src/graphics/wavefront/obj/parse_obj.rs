@@ -233,8 +233,11 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::graphics::wavefront::obj::structs::{
-        VertexDataReference, Vertice, VerticeNormal, VerticeParameterSpace, VerticeTexture,
+    use crate::{
+        graphics::wavefront::obj::structs::{
+            VertexDataReference, VerticeNormal, VerticeParameterSpace, VerticeTexture,
+        },
+        math,
     };
 
     use super::*;
@@ -331,10 +334,10 @@ mod tests {
         assert_eq!(result.vertices_normal.len(), 4);
         assert_eq!(result.vertices_parameter_space.len(), 4);
 
-        assert_eq!(result.vertices[0], Vertice::new(-5.0, 5.0, 0.0, 1.0));
-        assert_eq!(result.vertices[1], Vertice::new(-5.0, -5.0, 0.0, 1.0));
-        assert_eq!(result.vertices[2], Vertice::new(5.0, -5.0, 0.0, 1.0));
-        assert_eq!(result.vertices[3], Vertice::new(5.0, 5.0, 0.0, 1.0));
+        assert_eq!(result.vertices[0], math::Vec4::new(-5.0, 5.0, 0.0, 1.0));
+        assert_eq!(result.vertices[1], math::Vec4::new(-5.0, -5.0, 0.0, 1.0));
+        assert_eq!(result.vertices[2], math::Vec4::new(5.0, -5.0, 0.0, 1.0));
+        assert_eq!(result.vertices[3], math::Vec4::new(5.0, 5.0, 0.0, 1.0));
 
         assert_eq!(result.vertices_texture[0], VerticeTexture::new(-5.0, 5.0, 0.0));
         assert_eq!(result.vertices_texture[1], VerticeTexture::new(-5.0, -5.0, 0.0));

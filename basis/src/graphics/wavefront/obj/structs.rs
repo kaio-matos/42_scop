@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
 use crate::{
-    graphics::wavefront::{
-        self,
-        mtl::{Material, MTL},
+    graphics::{
+        aabb::AABB,
+        wavefront::{
+            self,
+            mtl::{Material, MTL},
+        },
     },
     math,
 };
@@ -91,24 +94,6 @@ impl std::fmt::Display for ParseError {
 ///////////////////////////////////
 // Vertex data
 ///////////////////////////////////
-
-#[derive(Debug, Clone, Default)]
-pub struct Vertice {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-    pub w: f32, // weight
-}
-impl Vertice {
-    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Vertice {
-        Vertice { x, y, z, w }
-    }
-}
-impl PartialEq for Vertice {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y && self.z == other.z && self.w == other.w
-    }
-}
 
 #[derive(Debug, Clone, Default)]
 pub struct VerticeParameterSpace {
@@ -228,7 +213,7 @@ pub struct OBJ {
     //
     // Vertex data
     //
-    pub vertices: Vec<Vertice>,
+    pub vertices: Vec<math::Vec4>,
     pub vertices_texture: Vec<VerticeTexture>,
     pub vertices_normal: Vec<VerticeNormal>,
     pub vertices_parameter_space: Vec<VerticeParameterSpace>,
@@ -262,19 +247,37 @@ impl OBJ {
 
     pub fn get_raw_vertices(&self, rgb: math::Vec3) -> Vec<f32> {
         let mut j = 0;
-        let texture = vec![
-            0.0, 0.0, 0.0, // Bottom-left-back
-            1.0, 0.0, 0.0, // Bottom-right-back
-            1.0, 1.0, 0.0, // Top-right-back
-            0.0, 1.0, 0.0, // Top-left-back
-            0.0, 0.0, 1.0, // Bottom-left-front
-            1.0, 0.0, 1.0, // Bottom-right-front
-            1.0, 1.0, 1.0, // Top-right-front
-            0.0, 1.0, 1.0, // Top-left-front
-        ];
+        let mut texture = self.vertices_texture.clone();
+
+        let aabb = AABB::from(&self.vertices);
+
+        // if there is no texture vertices we calculate ourselves based on the aabb
+        if texture.is_empty() {
+            for vertice in &self.vertices {
+                let mut range = math::Vec3::default();
+                range.x = aabb.max.x - aabb.min.x;
+                range.y = aabb.max.y - aabb.min.y;
+                range.z = aabb.max.z - aabb.min.z;
+                if range.x == 0.0 {
+                    range.x = 1.0;
+                }
+                if range.y == 0.0 {
+                    range.y = 1.0;
+                }
+                if range.z == 0.0 {
+                    range.z = 1.0;
+                }
+
+                texture.push(VerticeTexture::new(
+                    (vertice.x - aabb.min.x) / range.x,
+                    (vertice.y - aabb.min.y) / range.y,
+                    (vertice.z - aabb.min.z) / range.z,
+                ));
+            }
+        }
 
         self.vertices.iter().fold(
-            Vec::with_capacity(self.vertices.len() * 4),
+            Vec::with_capacity(self.vertices.len() * 10),
             |mut acc, vertice| {
                 acc.push(vertice.x);
                 acc.push(vertice.y);
@@ -284,21 +287,15 @@ impl OBJ {
                 acc.push(rgb.y);
                 acc.push(rgb.z);
                 if let Some(coord) = texture.get(j) {
-                    acc.push(*coord);
+                    acc.push(coord.u);
+                    acc.push(coord.v);
+                    acc.push(coord.w);
                 } else {
                     acc.push(0.0);
-                }
-                if let Some(coord) = texture.get(j + 1) {
-                    acc.push(*coord);
-                } else {
+                    acc.push(0.0);
                     acc.push(0.0);
                 }
-                if let Some(coord) = texture.get(j + 2) {
-                    acc.push(*coord);
-                } else {
-                    acc.push(0.0);
-                }
-                j += 3;
+                j += 1;
 
                 acc
             },
