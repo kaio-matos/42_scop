@@ -5,6 +5,7 @@
     - https://oida.dev/rust-enums-wrapping-errors
 
 - Learn OpenGL
+    - https://docs.gl/gl3/glTexParameter
     - https://learnopengl.com/Getting-started/Coordinate-Systems
 
 - Projection Matrixes (math behind glm)

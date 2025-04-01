@@ -34,7 +34,7 @@ impl Object {
 
             model,
             vao: glw::Vao::new(),
-            texture: glw::Texture::new(gl::TEXTURE_3D),
+            texture: glw::Texture::new(gl::TEXTURE_2D),
             cached_center: Vec3::default(),
             cached_vertices: Vec::default(),
             cached_indices: Vec::default(),
@@ -69,12 +69,13 @@ impl Object {
         self.vao.bind();
         self.texture.active(gl::TEXTURE0);
         self.texture.bind();
-        glw::draw_elements(
-            gl::TRIANGLES,
-            self.cached_indices.len() as i32,
-            gl::UNSIGNED_INT,
-            ptr::null(),
-        );
+        glw::draw_arrays(gl::TRIANGLES, 0, self.cached_vertices.len() as i32);
+        // glw::draw_elements(
+        //     gl::TRIANGLES,
+        //     self.cached_indices.len() as i32,
+        //     gl::UNSIGNED_INT,
+        //     ptr::null(),
+        // );
         self.vao.unbind();
     }
 
@@ -91,11 +92,11 @@ impl Object {
 
         self.vao.bind();
         let vbo = glw::BufferObject::new(gl::ARRAY_BUFFER, gl::STATIC_DRAW);
-        let ebo = glw::BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, gl::STATIC_DRAW);
+        // let ebo = glw::BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, gl::STATIC_DRAW);
         vbo.bind();
-        ebo.bind();
+        // ebo.bind();
         vbo.store_f32(&self.cached_vertices);
-        ebo.store_u32(&self.cached_indices);
+        // ebo.store_u32(&self.cached_indices);
 
         let stride_length = 10 * mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei;
         let start_pointer = ptr::null::<gl::types::GLfloat>();
@@ -127,25 +128,22 @@ impl Object {
     fn recompute_texture(&mut self) {
         self.texture.bind();
         self.texture
-            .tex_parameteri(gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
+            .tex_parameteri(gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
         self.texture
-            .tex_parameteri(gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
-        self.texture
-            .tex_parameteri(gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);
+            .tex_parameteri(gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
 
         self.texture
             .tex_parameteri(gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         self.texture
             .tex_parameteri(gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
 
-        self.texture.tex_image3d(
+        self.texture.tex_image2d(
             0,
-            gl::RGB as i32,
+            gl::RGBA8 as i32,
             self.model.texture.0 as i32,
             self.model.texture.1 as i32,
-            1,
             0,
-            gl::RGB,
+            gl::RGBA,
             gl::UNSIGNED_BYTE,
             self.model.texture.2.as_ptr() as *const std::ffi::c_void,
         );

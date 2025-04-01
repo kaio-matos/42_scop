@@ -246,13 +246,12 @@ impl OBJ {
     }
 
     pub fn get_raw_vertices(&self, rgb: math::Vec3) -> Vec<f32> {
-        let mut j = 0;
-        let mut texture = self.vertices_texture.clone();
+        let mut vertices_texture = self.vertices_texture.clone();
 
         let aabb = AABB::from(&self.vertices);
 
         // if there is no texture vertices we calculate ourselves based on the aabb
-        if texture.is_empty() {
+        if vertices_texture.is_empty() {
             for vertice in &self.vertices {
                 let mut range = math::Vec3::default();
                 range.x = aabb.max.x - aabb.min.x;
@@ -268,7 +267,7 @@ impl OBJ {
                     range.z = 1.0;
                 }
 
-                texture.push(VerticeTexture::new(
+                vertices_texture.push(VerticeTexture::new(
                     (vertice.x - aabb.min.x) / range.x,
                     (vertice.y - aabb.min.y) / range.y,
                     (vertice.z - aabb.min.z) / range.z,
@@ -276,26 +275,40 @@ impl OBJ {
             }
         }
 
-        self.vertices.iter().fold(
-            Vec::with_capacity(self.vertices.len() * 10),
-            |mut acc, vertice| {
-                acc.push(vertice.x);
-                acc.push(vertice.y);
-                acc.push(vertice.z);
-                acc.push(vertice.w);
-                acc.push(rgb.x);
-                acc.push(rgb.y);
-                acc.push(rgb.z);
-                if let Some(coord) = texture.get(j) {
-                    acc.push(coord.u);
-                    acc.push(coord.v);
-                    acc.push(coord.w);
-                } else {
-                    acc.push(0.0);
-                    acc.push(0.0);
-                    acc.push(0.0);
+        self.faces.iter().fold(
+            Vec::with_capacity(self.faces.len() * 10),
+            |mut acc, face| {
+                for reference in &face.vertex_references {
+                    let rvt = if self.vertices_texture.is_empty() {
+                        // if the texture was generated, we use the vertice reference
+                        reference.v - 1
+                    } else {
+                        // if the texture is from the OBJ file, we use their references
+                        reference.vt - 1
+                    };
+
+                    let v = if let Some(vertice) = self.vertices.get(reference.v - 1) {
+                        vertice
+                    } else {
+                        &math::Vec4::default()
+                    };
+                    let vt = if let Some(texture) = vertices_texture.get(rvt) {
+                        texture
+                    } else {
+                        &VerticeTexture::default()
+                    };
+
+                    acc.push(v.x);
+                    acc.push(v.y);
+                    acc.push(v.z);
+                    acc.push(v.w);
+                    acc.push(rgb.x);
+                    acc.push(rgb.y);
+                    acc.push(rgb.z);
+                    acc.push(vt.u);
+                    acc.push(vt.v);
+                    acc.push(vt.w);
                 }
-                j += 1;
 
                 acc
             },
