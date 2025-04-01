@@ -56,20 +56,22 @@ impl std::fmt::Display for LoadOBJError {
 pub fn load(file_path: &str) -> Result<OBJ, LoadOBJError> {
     let file_content = std::fs::read_to_string(file_path)?;
 
-    let mut obj = parse_obj(file_content)?;
+    let obj = parse_obj(file_content)?;
 
-    let mtls_paths = obj
-        .mtls_identifiers
-        .iter()
-        .map(|name| {
-            let mut path = file_path.split('/').collect::<Vec<&str>>();
-            path.pop();
-            path.push(name.as_str());
-            path.join("/")
-        })
-        .collect::<Vec<String>>();
+    // let mtls_paths = obj
+    //     .mtls_identifiers
+    //     .iter()
+    //     .map(|name| {
+    //         let mut path = file_path.split('/').collect::<Vec<&str>>();
+    //         path.pop();
+    //         path.push(name.as_str());
+    //         path.join("/")
+    //     })
+    //     .collect::<Vec<String>>();
 
-    let mtls = wavefront::mtl::load_files(mtls_paths)?;
+    // let mtls = wavefront::mtl::load_files(mtls_paths)?;
 
-    Ok(obj.load_mtls(mtls).clone())
+    // Ok(obj.load_mtls(mtls).clone())
+
+    Ok(obj.clone())
 }
