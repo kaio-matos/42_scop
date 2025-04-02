@@ -67,8 +67,6 @@ impl Object {
 
     pub fn draw(&self) {
         self.vao.bind();
-        self.texture.active(gl::TEXTURE0);
-        self.texture.bind();
         glw::draw_arrays(gl::TRIANGLES, 0, self.cached_vertices.len() as i32);
         // glw::draw_elements(
         //     gl::TRIANGLES,
@@ -111,7 +109,7 @@ impl Object {
         position_attribute.enable();
         let color_attribute =
             glw::VertexAttribute::new(1, 3, gl::FLOAT, gl::FALSE, stride_length, unsafe {
-                start_pointer.add(4) as *const c_void
+                start_pointer.add(3) as *const c_void
             });
         color_attribute.enable();
         let texture_coordinate_attribute =

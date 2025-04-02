@@ -17,13 +17,13 @@ use basis::{
 use structs::{Camera, Cube};
 use traits::EntityLifetime;
 
-use std::cell::RefCell;
 use std::rc::Rc;
+use std::{cell::RefCell, sync::OnceLock};
 
 static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;
 
-fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera) {
+fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera, texture_percentage: f32) {
     shader.bind();
 
     let mut model_mat = math::Mat4::identity();
@@ -48,7 +48,10 @@ fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera) {
         .get_uniform_location("model")
         .uniform_matrix4fv(&model_mat);
 
-    shader.get_uniform_location("ourTexture").uniform1i(0);
+    shader.get_uniform_location("object_texture").uniform1i(0);
+    shader
+        .get_uniform_location("texture_percentage")
+        .uniform1f(texture_percentage);
 
     obj.draw();
 
@@ -178,7 +181,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )));
 
     window.borrow_mut().init_gl();
-
     glw::enable(gl::DEPTH_TEST);
 
     let shader = glw::Shader::new();
@@ -198,6 +200,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         window.clone(),
     );
     let mut is_wireframe = false;
+    let mut is_texture_enabled = false;
+    let mut texture_percentage: f32 = 0.0;
 
     load_cubes(&mut entities)?;
     camera.setup();
@@ -225,7 +229,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .borrow_mut()
             .on_key_press(graphics::glfw::Key::Tab, graphics::glfw::Modifiers::empty())
         {
-            // TODO:
+            is_texture_enabled = !is_texture_enabled;
         }
 
         camera.update(&mut window.clone().borrow_mut());
@@ -233,12 +237,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             entity.update(&mut window.clone().borrow_mut());
         }
 
+        let deltatime = window.borrow().deltatime;
+
+        if is_texture_enabled {
+            texture_percentage += deltatime;
+            if texture_percentage > 1.0 {
+                texture_percentage = 1.0;
+            }
+        } else {
+            texture_percentage -= deltatime;
+            if texture_percentage < 0.0 {
+                texture_percentage = 0.0;
+            }
+        }
+
         for entity in entities.iter_mut() {
             match entity.get_object() {
                 None => {}
                 Some(object) => {
                     object.rotation = object.rotation.normalize();
-                    draw(&shader, object, &camera);
+                    draw(&shader, object, &camera, texture_percentage);
                 }
             }
         }
