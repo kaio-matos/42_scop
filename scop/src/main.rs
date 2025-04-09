@@ -17,8 +17,7 @@ use basis::{
 use structs::{Camera, Cube};
 use traits::EntityLifetime;
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, env, rc::Rc};
 
 static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;
@@ -58,12 +57,11 @@ fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera, texture_pe
     shader.unbind();
 }
 
-fn load_cubes(
+fn load_model(
+    filepath: &str,
     entities: &mut Vec<Box<dyn EntityLifetime>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut obj = structs::Object::new(wavefront::obj::load(
-        "scop/src/resources/cube_textured/cube.obj",
-    )?);
+    let mut obj = structs::Object::new(wavefront::obj::load(filepath)?);
     obj.set_texture(helpers::load_custom_texture(
         "scop/src/resources/raw_texture.txt",
     )?);
@@ -174,14 +172,24 @@ fn setup(entities: &mut Vec<Box<dyn EntityLifetime>>) {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args: Vec<String> = env::args().collect();
+    let mut entities: Vec<Box<dyn EntityLifetime>> = Vec::new();
+
+    if args.get(1).is_none() {
+        println!("usage: scop filepath");
+        return Ok(());
+    }
+
     let window = Rc::new(RefCell::new(Window::new(
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
-        "Hello World!",
+        "Scop",
     )));
 
     window.borrow_mut().init_gl();
     glw::enable(gl::DEPTH_TEST);
+
+    load_model(args[1].as_str(), &mut entities)?;
 
     let shader = glw::Shader::new();
     shader
@@ -191,7 +199,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ])
         .unwrap();
 
-    let mut entities: Vec<Box<dyn EntityLifetime>> = Vec::new();
     let mut camera = Camera::new(
         math::Vec3::new(0.0, 0.0, 10.0),
         math::Vec3::new(0.0, 0.0, -1.0),
@@ -203,7 +210,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut is_texture_enabled = false;
     let mut texture_percentage: f32 = 0.0;
 
-    load_cubes(&mut entities)?;
     camera.setup();
     setup(&mut entities);
 
