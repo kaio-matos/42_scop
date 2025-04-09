@@ -7,7 +7,7 @@ mod traits;
 use basis::{
     graphics::{
         self,
-        glw::{self, Texture},
+        glw::{self},
         wavefront,
         window::Window,
     },
@@ -17,8 +17,8 @@ use basis::{
 use structs::{Camera, Cube};
 use traits::EntityLifetime;
 
+use std::cell::RefCell;
 use std::rc::Rc;
-use std::{cell::RefCell, sync::OnceLock};
 
 static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;

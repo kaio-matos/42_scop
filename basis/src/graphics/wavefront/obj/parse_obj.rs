@@ -8,6 +8,8 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
     let mut previous_line = Option::None;
     let mut current_line: usize = 1;
     let mut smoothing_group: usize = 0;
+    let mut face_id: usize = 0;
+
     for line in lines {
         let mut tokens = line
             .split(" ")
@@ -88,7 +90,9 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
                 if smoothing_group != 0 {
                     result.smoothing_group = Some(smoothing_group);
                 }
+                result.id = face_id;
                 obj.faces.push(result);
+                face_id += 1;
                 Ok(())
             }
             "curv" => {
@@ -225,6 +229,10 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
         current_line += 1;
         previous_line = Some(line);
     }
+
+    obj.faces.iter_mut().for_each(|face| {
+        face.max_id = face_id;
+    });
 
     helpers::triangulate_polygons(&mut obj);
 

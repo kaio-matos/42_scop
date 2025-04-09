@@ -96,7 +96,7 @@ impl Object {
         vbo.store_f32(&self.cached_vertices);
         // ebo.store_u32(&self.cached_indices);
 
-        let stride_length = 10 * mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei;
+        let stride_length = 12 * mem::size_of::<gl::types::GLfloat>() as gl::types::GLsizei;
         let start_pointer = ptr::null::<gl::types::GLfloat>();
         let position_attribute = glw::VertexAttribute::new(
             0,
@@ -107,16 +107,30 @@ impl Object {
             start_pointer as *const c_void,
         );
         position_attribute.enable();
+
         let color_attribute =
             glw::VertexAttribute::new(1, 3, gl::FLOAT, gl::FALSE, stride_length, unsafe {
-                start_pointer.add(3) as *const c_void
+                start_pointer.add(4) as *const c_void
             });
         color_attribute.enable();
+
         let texture_coordinate_attribute =
             glw::VertexAttribute::new(2, 3, gl::FLOAT, gl::FALSE, stride_length, unsafe {
                 start_pointer.add(7) as *const c_void
             });
         texture_coordinate_attribute.enable();
+
+        let face_id_attribute =
+            glw::VertexAttribute::new(3, 1, gl::FLOAT, gl::FALSE, stride_length, unsafe {
+                start_pointer.add(10) as *const c_void
+            });
+        face_id_attribute.enable();
+
+        let max_face_id_attribute =
+            glw::VertexAttribute::new(4, 1, gl::FLOAT, gl::FALSE, stride_length, unsafe {
+                start_pointer.add(11) as *const c_void
+            });
+        max_face_id_attribute.enable();
 
         self.recompute_texture();
 

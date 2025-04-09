@@ -175,6 +175,8 @@ impl PartialEq for VertexDataReference {
 
 #[derive(Debug, Clone, Default)]
 pub struct Face {
+    pub id: usize,
+    pub max_id: usize,
     pub vertex_references: Vec<VertexDataReference>,
     pub material_name: Option<String>,
     pub material: Option<Material>,
@@ -186,6 +188,8 @@ impl Face {
         material_name: Option<String>,
     ) -> Face {
         Face {
+            id: 0,
+            max_id: 0,
             vertex_references,
             material_name,
             material: None,
@@ -276,7 +280,7 @@ impl OBJ {
         }
 
         self.faces.iter().fold(
-            Vec::with_capacity(self.faces.len() * 10),
+            Vec::with_capacity(self.faces.len() * 12),
             |mut acc, face| {
                 for reference in &face.vertex_references {
                     let rvt = if self.vertices_texture.is_empty() {
@@ -308,6 +312,8 @@ impl OBJ {
                     acc.push(vt.u);
                     acc.push(vt.v);
                     acc.push(vt.w);
+                    acc.push(face.id as f32);
+                    acc.push(face.max_id as f32);
                 }
 
                 acc
