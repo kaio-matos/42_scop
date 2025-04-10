@@ -30,7 +30,7 @@ fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera, texture_pe
         45.0_f32.to_radians(),
         (WINDOW_WIDTH / WINDOW_HEIGHT) as f32,
         0.1,
-        100.,
+        1000.,
     );
 
     model_mat.scale(obj.scale);
