@@ -221,10 +221,16 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
                 // Ignore comments
                 Ok(())
             }
-            unknown => Err(ParseError::InvalidToken(
-                current_line,
-                format!("Unknown token: '{unknown}'"),
-            )),
+            unknown => {
+                if unknown.starts_with("#") {
+                    Ok(())
+                } else {
+                    Err(ParseError::InvalidToken(
+                        current_line,
+                        format!("Unknown token: '{unknown}'"),
+                    ))
+                }
+            }
         }?;
         current_line += 1;
         previous_line = Some(line);

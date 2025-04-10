@@ -288,7 +288,11 @@ impl OBJ {
                         reference.v - 1
                     } else {
                         // if the texture is from the OBJ file, we use their references
-                        reference.vt - 1
+                        if reference.vt == 0 {
+                            0
+                        } else {
+                            reference.vt - 1
+                        }
                     };
 
                     let v = if let Some(vertice) = self.vertices.get(reference.v - 1) {
