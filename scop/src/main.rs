@@ -1,6 +1,4 @@
 mod helpers;
-mod learning_04;
-mod learning_05;
 mod structs;
 mod traits;
 
