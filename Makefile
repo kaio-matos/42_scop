@@ -1,9 +1,9 @@
 
 all:
-	cargo build
+	cargo build --quiet
 
 dev:
-	cargo run
+	cargo run ./scop/src/resources/42/42.obj --quiet
 
 test:
 	cargo test

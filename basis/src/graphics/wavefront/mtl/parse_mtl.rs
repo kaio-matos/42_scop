@@ -68,7 +68,7 @@ pub fn parse_mtl(data: &str) -> Result<MTL, ParseError> {
                 // Ignore comments
                 Ok(())
             }
-            unknown => {
+            _ => {
                 // Err(ParseError::InvalidToken(
                 //     current_line,
                 //     format!("Unknown token: '{unknown}'"),
@@ -116,7 +116,7 @@ mod tests {
         let result = parse_mtl(file).expect("This should work");
 
         assert_eq!(result.len(), 1);
-        assert!(result.get("Rock").is_some());
+        assert!(result.contains_key("Rock"));
         assert_eq!(result.get("Rock").unwrap().name, "Rock");
     }
 
@@ -437,7 +437,7 @@ mod tests {
             # Material Count: 1
 
             newmtl Material
-            Ns 96.078431
+            Ns 96.07843
             Ka 0.000000 0.000000 0.000000
             Kd 0.640000 0.640000 0.640000
             Ks 0.500000 0.500000 0.500000
@@ -463,10 +463,10 @@ mod tests {
         assert_eq!(material.atmosphere_reflectivity.g, 0.5);
         assert_eq!(material.atmosphere_reflectivity.b, 0.5);
 
-        assert_eq!(material.specular_highlight_exponent, 96.078431);
+        assert_eq!(material.specular_highlight_exponent, 96.078_43);
         assert_eq!(material.optical_density, 1.0);
         assert_eq!(material.dissolve_factor.factor, 1.0);
-        assert_eq!(material.dissolve_factor.halo, false);
+        assert!(!material.dissolve_factor.halo);
         assert_eq!(material.illumination_model, IlluminationModel::HighlightOn);
     }
 }

@@ -17,7 +17,6 @@ out float MaxFaceId;
 void main()
 {
     vec4 pos = aPos;
-    pos.w = 1.0;
     gl_Position = projection * view * model * pos;
     Color = aColor;
     TexCoord = aTexCoord;

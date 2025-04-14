@@ -5,6 +5,11 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
     let mut obj = OBJ::default();
 
     let lines = data.split("\n").map(|s| s.trim()).filter(|s| !s.is_empty());
+
+    if data.is_empty() {
+        return Err(ParseError::EmptyFile(0, "Object file is empty".to_string()));
+    }
+
     let mut previous_line = Option::None;
     let mut current_line: usize = 1;
     let mut smoothing_group: usize = 0;
@@ -236,6 +241,13 @@ pub fn parse_obj(data: String) -> Result<OBJ, ParseError> {
         previous_line = Some(line);
     }
 
+    if obj.vertices.is_empty() {
+        return Err(ParseError::MissingVertices);
+    }
+    if obj.faces.is_empty() {
+        return Err(ParseError::MissingFaces);
+    }
+
     obj.faces.iter_mut().for_each(|face| {
         face.max_id = face_id;
     });
@@ -267,18 +279,20 @@ mod tests {
 
             mtllib cube.mtl
             o cube39
-            # v 0.232406 -1.216630 1.133818
+            v 0.232406 -1.216630 1.133818
             # v 0.232406 -0.745504 2.843098
             # testing
             # v -0.227475 -0.745504 2.843098
             # v -0.227475 -1.216630 1.133818
             # v 0.232407 1.119982 1.133819
             # v 0.232406 1.119982 1.602814
+            #v 0.232406 1.119982 1.602814
+            f 1 1 1 1
 ";
 
         let result = parse_obj(file.to_string()).expect("This should work");
 
-        assert_eq!(result.vertices.len(), 0);
+        assert_eq!(result.vertices.len(), 1);
         assert_eq!(result.vertices_texture.len(), 0);
         assert_eq!(result.vertices_normal.len(), 0);
         assert_eq!(result.vertices_parameter_space.len(), 0);
@@ -293,6 +307,7 @@ mod tests {
             o cube39
             v 0.232406 -1.216630 1.133818
             v 0.232406 -0.745504 2.843098
+            f 1 1 1 1
 ";
 
         let result = parse_obj(file.to_string()).expect("This should work");
@@ -309,6 +324,7 @@ mod tests {
             o cube39
             v 0.232406 -1.216630 1.133818
             v 0.232406 -0.745504 2.843098
+            f 1 1 1 1
 ";
 
         let result = parse_obj(file.to_string()).expect("This should work");
@@ -343,6 +359,7 @@ mod tests {
             vp      0.000000       0.000000
             vp      1.000000       0.000000
             vp      0.500000       0.500000
+            f       1 1 1 1
 ";
 
         let result = parse_obj(file.to_string()).expect("This should work");
@@ -394,12 +411,18 @@ mod tests {
         assert_eq!(result.faces[0].vertex_references[0], VertexDataReference::new(1, 1, 1));
         assert_eq!(result.faces[0].vertex_references[1], VertexDataReference::new(2, 2, 2));
         assert_eq!(result.faces[0].vertex_references[2], VertexDataReference::new(3, 3, 3));
-        assert_eq!(result.faces[0].vertex_references[3], VertexDataReference::new(4, 4, 4));
+        // after triangulation
+        assert_eq!(result.faces[0].vertex_references[3], VertexDataReference::new(1, 1, 1)); 
+        assert_eq!(result.faces[0].vertex_references[4], VertexDataReference::new(3, 3, 3)); 
+        assert_eq!(result.faces[0].vertex_references[5], VertexDataReference::new(4, 4, 4)); 
 
         assert_eq!(result.faces[1].vertex_references[0], VertexDataReference::new(1, 0, 1));
         assert_eq!(result.faces[1].vertex_references[1], VertexDataReference::new(2, 0, 2));
         assert_eq!(result.faces[1].vertex_references[2], VertexDataReference::new(3, 0, 3));
-        assert_eq!(result.faces[1].vertex_references[3], VertexDataReference::new(4, 0, 4));
+        // after triangulation
+        assert_eq!(result.faces[1].vertex_references[3], VertexDataReference::new(1, 0, 1));
+        assert_eq!(result.faces[1].vertex_references[4], VertexDataReference::new(3, 0, 3));
+        assert_eq!(result.faces[1].vertex_references[5], VertexDataReference::new(4, 0, 4));
     }
 
     #[test]
@@ -424,12 +447,18 @@ mod tests {
         assert_eq!(result.faces[0].vertex_references[0], VertexDataReference::new(1, 0, 0));
         assert_eq!(result.faces[0].vertex_references[1], VertexDataReference::new(2, 0, 0));
         assert_eq!(result.faces[0].vertex_references[2], VertexDataReference::new(3, 0, 0));
-        assert_eq!(result.faces[0].vertex_references[3], VertexDataReference::new(4, 0, 0));
+        // after triangulation
+        assert_eq!(result.faces[0].vertex_references[3], VertexDataReference::new(1, 0, 0));
+        assert_eq!(result.faces[0].vertex_references[4], VertexDataReference::new(3, 0, 0));
+        assert_eq!(result.faces[0].vertex_references[5], VertexDataReference::new(4, 0, 0));
 
         assert_eq!(result.faces[1].vertex_references[0], VertexDataReference::new(8, 0, 0));
         assert_eq!(result.faces[1].vertex_references[1], VertexDataReference::new(7, 0, 0));
         assert_eq!(result.faces[1].vertex_references[2], VertexDataReference::new(6, 0, 0));
-        assert_eq!(result.faces[1].vertex_references[3], VertexDataReference::new(5, 0, 0));
+        // after triangulation
+        assert_eq!(result.faces[1].vertex_references[3], VertexDataReference::new(8, 0, 0));
+        assert_eq!(result.faces[1].vertex_references[4], VertexDataReference::new(6, 0, 0));
+        assert_eq!(result.faces[1].vertex_references[5], VertexDataReference::new(5, 0, 0));
     }
 
     #[test]

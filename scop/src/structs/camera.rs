@@ -1,12 +1,8 @@
-use std::{cell::RefCell, rc::Rc};
-
 use crate::traits::*;
 use basis::{
-    graphics::{self, window::Window},
+    graphics,
     math::{self, Mat4, Vec3, VectorFunctions},
 };
-
-use super::Object;
 
 #[derive(Debug, Clone)]
 pub struct Camera {
@@ -14,23 +10,15 @@ pub struct Camera {
     front: Vec3,
     up: Vec3,
     speed: f32,
-    window: Rc<RefCell<Window>>,
 }
 
 impl Camera {
-    pub fn new(
-        position: Vec3,
-        front: Vec3,
-        up: Vec3,
-        speed: f32,
-        window: Rc<RefCell<Window>>,
-    ) -> Self {
+    pub fn new(position: Vec3, front: Vec3, up: Vec3, speed: f32) -> Self {
         Self {
             position,
             front,
             up,
             speed,
-            window,
         }
     }
 
@@ -78,7 +66,8 @@ impl Controllable for Camera {
         self.position = self.position - self.up.scale(self.get_speed(deltatime));
     }
 
-    fn rotate(&mut self, deltatime: f32, yaw: f32, pitch: f32) {
+    #[warn(dead_code)]
+    fn rotate(&mut self, _deltatime: f32, yaw: f32, pitch: f32) {
         let yawr = yaw.to_radians();
         let pitchr = pitch.to_radians();
         let mut direction = Vec3::splat(0.);

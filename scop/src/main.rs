@@ -15,7 +15,7 @@ use basis::{
 use structs::{Camera, Cube};
 use traits::EntityLifetime;
 
-use std::{cell::RefCell, env, rc::Rc};
+use std::{env, process::ExitCode};
 
 static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;
@@ -169,7 +169,7 @@ fn setup(entities: &mut Vec<Box<dyn EntityLifetime>>) {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let mut entities: Vec<Box<dyn EntityLifetime>> = Vec::new();
 
@@ -178,13 +178,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let window = Rc::new(RefCell::new(Window::new(
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        "Scop",
-    )));
+    let mut window = Window::new(WINDOW_WIDTH, WINDOW_HEIGHT, "Scop");
 
-    window.borrow_mut().init_gl();
+    window.init_gl();
     glw::enable(gl::DEPTH_TEST);
 
     load_model(args[1].as_str(), &mut entities)?;
@@ -202,7 +198,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         math::Vec3::new(0.0, 0.0, -1.0),
         math::Vec3::new(0.0, 1.0, 0.0),
         30.,
-        window.clone(),
     );
     let mut is_wireframe = false;
     let mut is_texture_enabled = false;
@@ -211,16 +206,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     camera.setup();
     setup(&mut entities);
 
-    while !window.borrow_mut().should_close() {
-        window.borrow_mut().compute_deltatime();
+    while !window.should_close() {
+        window.compute_deltatime();
 
         glw::clear_color(0.2, 0.3, 0.3, 1.0);
         glw::clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-        if window
-            .borrow_mut()
-            .on_key_press(graphics::glfw::Key::E, graphics::glfw::Modifiers::empty())
-        {
+        if window.on_key_press(graphics::glfw::Key::E, graphics::glfw::Modifiers::empty()) {
             is_wireframe = !is_wireframe;
             if is_wireframe {
                 glw::polygon_mode(gl::FRONT_AND_BACK, gl::LINE);
@@ -229,19 +221,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        if window
-            .borrow_mut()
-            .on_key_press(graphics::glfw::Key::Tab, graphics::glfw::Modifiers::empty())
-        {
+        if window.on_key_press(graphics::glfw::Key::Tab, graphics::glfw::Modifiers::empty()) {
             is_texture_enabled = !is_texture_enabled;
         }
 
-        camera.update(&mut window.clone().borrow_mut());
+        camera.update(&mut window);
         for entity in entities.iter_mut() {
-            entity.update(&mut window.clone().borrow_mut());
+            entity.update(&mut window);
         }
 
-        let deltatime = window.borrow().deltatime;
+        let deltatime = window.deltatime;
 
         if is_texture_enabled {
             texture_percentage += deltatime;
@@ -265,8 +254,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        window.borrow_mut().update(&mut |_event| {});
+        window.update(&mut |_event| {});
     }
 
     Ok(())
+}
+
+fn main() -> ExitCode {
+    let result = run();
+    if let Err(error) = result {
+        eprintln!("Error: {}", error);
+        return ExitCode::FAILURE;
+    }
+    ExitCode::SUCCESS
 }

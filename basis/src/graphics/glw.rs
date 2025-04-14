@@ -21,7 +21,6 @@ use crate::math;
 /// // You can have rust code between fences inside the comments
 /// // If you pass --test to `rustdoc`, it will even test it for you!
 /// use basis::graphics::glw::BufferObject;
-/// use gl;
 ///
 /// let vertices: [f32; 9] = [
 ///     -0.5, -0.5, 0.0,
@@ -335,6 +334,7 @@ impl Shader {
 #[derive(Debug, Clone, Copy)]
 pub struct UniformLocation {
     id: gl::types::GLint,
+    #[allow(dead_code)]
     name: &'static str,
 }
 
@@ -381,6 +381,7 @@ impl UniformLocation {
 #[derive(Debug, Clone, Copy)]
 pub struct ShaderFile {
     id: gl::types::GLuint,
+    #[allow(dead_code)]
     r#type: gl::types::GLenum,
 }
 
@@ -391,6 +392,7 @@ impl ShaderFile {
     }
 
     pub fn new_from_source(code: &str, r#type: gl::types::GLenum) -> Result<Self, io::Error> {
+        #[allow(unused_assignments)]
         let mut shader_id: u32 = 0;
         unsafe {
             shader_id = gl::CreateShader(r#type);

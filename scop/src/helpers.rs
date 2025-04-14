@@ -2,14 +2,17 @@ use std::{fs, mem, ptr};
 
 use basis::graphics::glw;
 
+#[allow(dead_code)]
 pub fn draw_square() {
     #[rustfmt::skip]
+    #[allow(unused_variables)]
     let square: [f32; 16] = [
         0.0,   0.0,   0.0, 1.0,
         0.0,   300.0, 0.0, 1.0,
         300.0, 300.0, 0.0, 1.0,
         300.0, 0.0,   0.0, 1.0,
     ];
+    #[allow(unused_variables)]
     let indices: [u32; 6] = [
         0, 1, 2, // first triangle
         0, 3, 2, // second triangle
@@ -18,6 +21,7 @@ pub fn draw_square() {
     // draw_elements(&square, &indices);
 }
 
+#[allow(dead_code)]
 pub fn draw_cube() {
     #[rustfmt::skip]
     let cube: [f32; 108] = [
@@ -72,8 +76,8 @@ pub fn draw_triangles(vertices: &[f32]) {
     vao.bind();
     let vbo = glw::BufferObject::new(gl::ARRAY_BUFFER, gl::STATIC_DRAW);
     vbo.bind();
-    vbo.store_f32(&vertices);
-    let vertex_count = vertices.len() / 3 as usize;
+    vbo.store_f32(vertices);
+    let vertex_count = vertices.len() / 3_usize;
     let position_attribute = glw::VertexAttribute::new(
         0,
         3,

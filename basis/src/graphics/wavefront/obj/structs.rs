@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     graphics::{
         aabb::AABB,
@@ -13,6 +11,9 @@ use crate::{
 
 #[derive(Debug)]
 pub enum ParseError {
+    MissingFaces,
+    MissingVertices,
+    EmptyFile(usize, String),
     InvalidToken(usize, String),
     InvalidValue(usize, String),
     InvalidVertex(usize, String),
@@ -31,6 +32,15 @@ impl std::error::Error for ParseError {}
 impl std::fmt::Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+            ParseError::EmptyFile(line, token) => {
+                write!(f, "Invalid token at line {}: {}", line, token)
+            }
+            ParseError::MissingFaces => {
+                write!(f, "Missing faces")
+            }
+            ParseError::MissingVertices => {
+                write!(f, "Missing vertices")
+            }
             ParseError::InvalidToken(line, token) => {
                 write!(f, "Invalid token at line {}: {}", line, token)
             }
@@ -246,7 +256,7 @@ pub struct OBJ {
 
 impl OBJ {
     pub fn has_loaded_materials(&self) -> bool {
-        self.mtls.len() > 0
+        !self.mtls.is_empty()
     }
 
     pub fn get_raw_vertices(&self, rgb: math::Vec3) -> Vec<f32> {
@@ -257,10 +267,11 @@ impl OBJ {
         // if there is no texture vertices we calculate ourselves based on the aabb
         if vertices_texture.is_empty() {
             for vertice in &self.vertices {
-                let mut range = math::Vec3::default();
-                range.x = aabb.max.x - aabb.min.x;
-                range.y = aabb.max.y - aabb.min.y;
-                range.z = aabb.max.z - aabb.min.z;
+                let mut range = math::Vec3 {
+                    x: aabb.max.x - aabb.min.x,
+                    y: aabb.max.y - aabb.min.y,
+                    z: aabb.max.z - aabb.min.z,
+                };
                 if range.x == 0.0 {
                     range.x = 1.0;
                 }
