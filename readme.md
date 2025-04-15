@@ -1,3 +1,20 @@
+### Instaltion
+
+1. Make sure to install brew
+2. Make sure to install cmake
+
+```
+sudo apt update
+sudo apt install cmake
+sudo apt install libxrandr-dev libxcursor-dev
+```
+
+3. Make sure to install glfw3 (for glfw3-rs)
+
+```
+brew install glfw3
+```
+
 ### Links
 
 - Rust
