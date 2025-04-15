@@ -6,7 +6,7 @@
 ```
 sudo apt update
 sudo apt install cmake
-sudo apt install libxrandr-dev libxcursor-dev
+sudo apt install libxrandr-dev libxcursor-dev libxi-dev
 ```
 
 3. Make sure to install glfw3 (for glfw3-rs)
@@ -14,6 +14,9 @@ sudo apt install libxrandr-dev libxcursor-dev
 ```
 brew install glfw3
 ```
+
+4. If in a VM make sure to increase the video memory available
+5. If in a VM make sure to enable 3D hardware acceleration
 
 ### Links
 
