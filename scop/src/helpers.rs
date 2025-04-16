@@ -104,8 +104,8 @@ pub fn load_custom_texture(path: &str) -> Result<(u32, u32, Vec<u8>), Box<dyn st
     // first line `width height`
     if let Some(line) = lines.next() {
         let mut dimensions = line.split_whitespace();
-        width = dimensions.next().unwrap().parse::<u32>()?;
-        height = dimensions.next().unwrap().parse::<u32>()?;
+        width = dimensions.next().unwrap_or("").parse::<u32>()?;
+        height = dimensions.next().unwrap_or("").parse::<u32>()?;
     }
     let mut texture_data = Vec::new();
     // second line `number number number ....`

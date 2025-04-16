@@ -2,6 +2,10 @@ use std::ops;
 
 pub trait VectorFunctions<T>: ops::Add<T> + ops::Sub<T> + ops::Mul<T> {
     fn negate(&self) -> Self;
+
+    ///
+    /// Transforms a vector into a unit vector (vector with length 1)
+    ///
     fn normalize(&self) -> Self;
     fn scale(&self, n: f32) -> Self;
 
@@ -14,17 +18,6 @@ pub trait VectorFunctions<T>: ops::Add<T> + ops::Sub<T> + ops::Mul<T> {
     /// If the vectors are parallel, the cross product is the zero vector.
     ///
     fn cross(&self, v: Self) -> Self;
-
-    ///
-    /// Dot product of two vectors
-    ///
-    /// The dot product indicates how much one vector extends in the direction of another.
-    ///
-    /// If the value is 0, the vectors are orthogonal (perpendicular).
-    /// If the value is positive, the vectors are in the same general direction.
-    /// If the value is negative, the vectors are in the opposite general direction.
-    ///
-    fn dot(&self, v: Self) -> f32;
 }
 
 #[repr(C)]
@@ -100,15 +93,15 @@ impl VectorFunctions<Vec4> for Vec4 {
     }
 
     fn normalize(&self) -> Self {
-        let hipotenuse = f32::sqrt(
+        let length = f32::sqrt(
             (self.x * self.x) + (self.y * self.y) + (self.z * self.z) + (self.w * self.w),
         );
 
         Self {
-            x: self.x / hipotenuse,
-            y: self.y / hipotenuse,
-            z: self.z / hipotenuse,
-            w: self.w / hipotenuse, // TODO: Check if this is correct
+            x: self.x / length,
+            y: self.y / length,
+            z: self.z / length,
+            w: self.w / length,
         }
     }
 
@@ -126,12 +119,8 @@ impl VectorFunctions<Vec4> for Vec4 {
             x: (self.y * v.z) - (self.z * v.y),
             y: (self.z * v.x) - (self.x * v.z),
             z: (self.x * v.y) - (self.y * v.x),
-            w: 0.0, // TODO: Check if this is correct
+            w: 0.0,
         }
-    }
-
-    fn dot(&self, v: Vec4) -> f32 {
-        (self.x * v.x) + (self.y * v.y) + (self.z * v.z) + (self.w * v.w)
     }
 }
 
@@ -201,16 +190,16 @@ impl VectorFunctions<Vec3> for Vec3 {
         if self.x == 0.0 && self.y == 0.0 && self.z == 0.0 {
             return *self;
         }
-        let hypotenuse = f32::sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z));
+        let length = f32::sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z));
 
-        if hypotenuse == 0.0 {
+        if length == 0.0 {
             return *self;
         }
 
         Self {
-            x: self.x / hypotenuse,
-            y: self.y / hypotenuse,
-            z: self.z / hypotenuse,
+            x: self.x / length,
+            y: self.y / length,
+            z: self.z / length,
         }
     }
 
@@ -228,10 +217,6 @@ impl VectorFunctions<Vec3> for Vec3 {
             y: (self.z * v.x) - (self.x * v.z),
             z: (self.x * v.y) - (self.y * v.x),
         }
-    }
-
-    fn dot(&self, v: Vec3) -> f32 {
-        (self.x * v.x) + (self.y * v.y) + (self.z * v.z)
     }
 }
 
