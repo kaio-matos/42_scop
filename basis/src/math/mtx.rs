@@ -112,26 +112,20 @@ impl Mat4 {
     }
 
     pub fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Self {
-        let mid = Vec3 {
-            x: (left + right) / 2.,
-            y: (bottom + top) / 2.,
-            z: (-near + -far) / 2.,
-        };
+        let mut r = Mat4::identity();
+        // left    - 0 --- 500 right
+        // bottom  - 0 --- 500 top
+        // near    - 0 --- 100 far
 
-        let scale = Vec3 {
-            x: 2. / (right - left),
-            y: 2. / (top - bottom),
-            z: 2. / (far - near),
-        };
+        let range_x = right - left;
+        let range_y = top - bottom;
+        let range_z = far - near;
 
-        let center_about_origin = *Mat4::identity().translate(mid.negate());
-        let scale_viewing_volume = *Mat4::identity().scale(scale);
-        let mut convert_to_left_handed = Mat4::identity();
-        convert_to_left_handed.c3.z = -1.;
+        r.c0.x = (2. / range_x) - 1.;
+        r.c1.y = (2. / range_y) - 1.;
+        r.c2.z = -(2. / range_z) - 1.;
 
-        let result = Mat4::identity();
-
-        result * convert_to_left_handed * scale_viewing_volume * center_about_origin
+        r
     }
 
     pub fn perspective(fov: f32, aspect_ratio: f32, near: f32, far: f32) -> Self {
@@ -382,28 +376,29 @@ mod tests {
     fn it_should_be_able_to_instantiate_mat4_with_ortho() {
         let result = Mat4::ortho(0., 800., 0., 800., 0.1, 100.);
 
+        println!("res: {}", result);
         // line 1
-        assert_eq!(result.c0.x, 0.0025);
+        assert_eq!(result.c0.x, -0.9975);
         assert_eq!(result.c0.y, 0.0);
         assert_eq!(result.c0.z, 0.0);
         assert_eq!(result.c0.w, 0.0);
 
         // line 2
         assert_eq!(result.c1.x, 0.0);
-        assert_eq!(result.c1.y, 0.0025);
+        assert_eq!(result.c1.y, -0.9975);
         assert_eq!(result.c1.z, 0.0);
         assert_eq!(result.c1.w, 0.0);
 
         // line 3
         assert_eq!(result.c2.x, 0.0);
         assert_eq!(result.c2.y, 0.0);
-        assert_eq!(result.c2.z, 0.02002002);
+        assert_eq!(result.c2.z, -1.02002);
         assert_eq!(result.c2.w, 0.0);
 
         // line 4
-        assert_eq!(result.c3.x, -1.0);
-        assert_eq!(result.c3.y, -1.0);
-        assert_eq!(result.c3.z, 0.0020020008);
+        assert_eq!(result.c3.x, 0.0);
+        assert_eq!(result.c3.y, 0.0);
+        assert_eq!(result.c3.z, 0.0);
         assert_eq!(result.c3.w, 1.0);
     }
 
