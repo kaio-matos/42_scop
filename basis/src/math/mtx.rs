@@ -129,18 +129,29 @@ impl Mat4 {
     }
 
     pub fn perspective(fov: f32, aspect_ratio: f32, near: f32, far: f32) -> Self {
-        let mut p = Mat4::splat(0.0);
+        //  aspect_ratio / 1 tan(fov/2)               0                 0                            0
+        //                            0    1/tan(fov/2)                 0                            0
+        //                            0               0    far/(far-near)     -(far/(far-near)) * near
+        //                            0               0                 1                            0
+        //
+        let p = Mat4::identity();
 
         let tan_half_fovy = f32::tan(fov / 2.);
 
-        // right handed
-        p.c0.x = 1. / (aspect_ratio * tan_half_fovy);
-        p.c1.y = 1. / tan_half_fovy;
-        p.c2.z = -(far + near) / (far - near);
-        p.c3.z = -(2. * far * near) / (far - near);
-        p.c2.w = -1.;
+        let mut aspect_ratio_mtx = Mat4::identity();
+        aspect_ratio_mtx.c0.x = aspect_ratio;
 
-        p
+        let mut field_of_view_mtx = Mat4::identity();
+        field_of_view_mtx.c0.x = 1. / tan_half_fovy;
+        field_of_view_mtx.c1.y = 1. / tan_half_fovy;
+
+        let lambda = far / (far - near);
+        let mut normalization_mtx = Mat4::identity();
+        normalization_mtx.c2.z = -lambda;
+        normalization_mtx.c3.z = -(lambda * near);
+        normalization_mtx.c2.w = -1.; // store the z value
+
+        p * aspect_ratio_mtx * field_of_view_mtx * normalization_mtx
     }
 
     pub fn splat(n: f32) -> Self {
