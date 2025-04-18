@@ -58,6 +58,10 @@ impl Window {
         self.window_handle.should_close()
     }
 
+    pub fn get_size(&self) -> (i32, i32) {
+        self.window_handle.get_size()
+    }
+
     pub fn update<F>(&mut self, on_event: &mut F)
     where
         F: FnMut(&WindowEvent),

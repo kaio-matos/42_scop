@@ -20,13 +20,20 @@ use std::{env, process::ExitCode};
 static WINDOW_HEIGHT: u32 = 800;
 static WINDOW_WIDTH: u32 = 800;
 
-fn draw(shader: &glw::Shader, obj: &structs::Object, camera: &Camera, texture_percentage: f32) {
+fn draw(
+    shader: &glw::Shader,
+    obj: &structs::Object,
+    camera: &Camera,
+    texture_percentage: f32,
+    window_size: (i32, i32),
+) {
     shader.bind();
+    let (window_width, window_height) = window_size;
 
     let mut model_mat = math::Mat4::identity();
-    let projection_mat = math::Mat4::perspective(
+    let projection_mat = math::Mat4::symmetric_perspective(
         45.0_f32.to_radians(),
-        (WINDOW_WIDTH / WINDOW_HEIGHT) as f32,
+        window_width as f32 / window_height as f32,
         0.1,
         1000.,
     );
@@ -249,7 +256,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 None => {}
                 Some(object) => {
                     object.rotation = object.rotation.normalize();
-                    draw(&shader, object, &camera, texture_percentage);
+                    draw(
+                        &shader,
+                        object,
+                        &camera,
+                        texture_percentage,
+                        window.get_size(),
+                    );
                 }
             }
         }
