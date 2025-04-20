@@ -1,22 +1,19 @@
-### Instaltion
+### Installation
 
-1. Make sure to install brew
+1. Make sure to install brew https://brew.sh/
 2. Make sure to install cmake
+3. Install rust with https://rustup.rs/
+4. Make sure to install glfw3 (for glfw3-rs)
 
 ```
 sudo apt update
 sudo apt install cmake
-sudo apt install libxrandr-dev libxcursor-dev libxi-dev
-```
-
-3. Make sure to install glfw3 (for glfw3-rs)
-
-```
+sudo apt install libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev
 brew install glfw3
 ```
 
-4. If in a VM make sure to increase the video memory available
-5. If in a VM make sure to enable 3D hardware acceleration
+5. If in a VM make sure to increase the video memory available
+6. If in a VM make sure to enable 3D hardware acceleration
 
 ### Links
 
