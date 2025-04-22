@@ -7,8 +7,7 @@
 
 ```
 sudo apt update
-sudo apt install cmake
-sudo apt install libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev
+sudo apt install cmake libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev
 brew install glfw3
 ```
 
